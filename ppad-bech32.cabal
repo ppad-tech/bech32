@@ -24,7 +24,7 @@ library
   ghc-options:
       -Wall
   exposed-modules:
-      Codec.Binary.Bech32
+      Data.ByteString.Bech32
   build-depends:
       base >= 4.9 && < 5
     , bytestring >= 0.9 && < 0.13
