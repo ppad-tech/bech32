@@ -5,12 +5,14 @@
 
 module Data.ByteString.Bech32 where
 
+import Control.Monad (guard)
 import Data.Bits ((.|.), (.&.))
 import qualified Data.Bits as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
-import Data.Word (Word32)
+import qualified Data.Primitive.PrimArray as PA
+import Data.Word (Word8, Word32, Word64)
 
 fi :: (Integral a, Num b) => a -> b
 fi = fromIntegral
@@ -143,4 +145,64 @@ as_w5s bs = BS.map f bs where
 as_bech32 :: BS.ByteString -> BS.ByteString
 as_bech32 bs = BS.map f bs where
   f b = BS.index bech32_charset (fi b)
+
+valid_hrp :: BS.ByteString -> Bool
+valid_hrp hrp
+    | l == 0 || l > 83 = False
+    | otherwise = BS.all (\b -> (b > 32) && (b < 127)) hrp
+  where
+    l = BS.length hrp
+
+bech32_polymod :: BS.ByteString -> Word32
+bech32_polymod = BS.foldl' alg 1 where
+  generator = PA.primArrayFromListN 5
+    [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
+
+  alg !chk v =
+    let !b = chk `B.shiftR` 25
+        c = (chk .&. 0x1ffffff) `B.shiftL` 5 `B.xor` fi v
+    in  loop_gen 0 b c
+
+  loop_gen i b !chk
+    | i > 4 = chk
+    | otherwise =
+        let sor | B.testBit (b `B.shiftR` i) 0 = PA.indexPrimArray generator i
+                | otherwise = 0
+        in  loop_gen (succ i) b (chk `B.xor` sor)
+
+bech32_hrp_expand :: BS.ByteString -> BS.ByteString
+bech32_hrp_expand bs = toStrict
+  $  BSB.byteString (BS.map (`B.shiftR` 5) bs)
+  <> BSB.word8 0
+  <> BSB.byteString (BS.map (.&. 0b11111) bs)
+
+bech32_verify_checksum :: BS.ByteString -> BS.ByteString -> Bool
+bech32_verify_checksum hrp dat =
+  let bs = bech32_hrp_expand hrp <> dat
+  in  bech32_polymod bs == 1
+
+bech32_create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
+bech32_create_checksum hrp dat =
+  let pre = bech32_hrp_expand hrp <> dat
+      pay = toStrict $
+           BSB.byteString pre
+        <> BSB.byteString "\NUL\NUL\NUL\NUL\NUL\NUL"
+      pm = bech32_polymod pay `B.xor` 1
+
+      code i = (fi (pm `B.shiftR` fi i) .&. 0b11111)
+
+  in  BS.map code "\EM\DC4\SI\n\ENQ\NUL" -- BS.pack [25, 20, 15, 10, 5, 0]
+
+-- base255 -> bech32
+encode :: BS.ByteString -> BS.ByteString -> Maybe BS.ByteString
+encode hrp (base32 -> dat) = do
+  guard (valid_hrp hrp)
+  let check = bech32_create_checksum hrp (as_w5s dat)
+      res = toStrict $
+           BSB.byteString hrp
+        <> BSB.word8 49 -- 1
+        <> BSB.byteString dat
+        <> BSB.byteString (as_bech32 check)
+  guard (BS.length res < 91)
+  pure res
 
