@@ -1,7 +1,7 @@
 cabal-version:      3.0
 name:               ppad-bech32
 version:            0.1.0
-synopsis:           The bech32m encoding, per BIP350.
+synopsis:           The bech32 and bech32m encoding, per BIPs 173 & 350.
 license:            MIT
 license-file:       LICENSE
 author:             Jared Tobin
@@ -11,8 +11,7 @@ build-type:         Simple
 tested-with:        GHC == 9.8.1
 extra-doc-files:    CHANGELOG
 description:
-  A pure implementation of bech32m encoding & decoding on strict and
-  lazy ByteStrings.
+  BIP173 bech32 & BIP350 bech32m encoding/decoding on strict ByteStrings.
 
 source-repository head
   type:     git
@@ -23,9 +22,10 @@ library
   hs-source-dirs:   lib
   ghc-options:
       -Wall
-  exposed-modules:
+  other-modules:
       Data.ByteString.Base32
-    , Data.ByteString.Bech32
+  exposed-modules:
+      Data.ByteString.Bech32
     , Data.ByteString.Bech32m
   build-depends:
       base >= 4.9 && < 5

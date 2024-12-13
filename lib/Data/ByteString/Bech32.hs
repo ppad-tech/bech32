@@ -20,6 +20,7 @@ toStrict = BS.toStrict
 verify_checksum :: BS.ByteString -> BS.ByteString -> Bool
 verify_checksum = B32.verify_checksum Bech32
 
+-- XX no need for this to be here
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32
 

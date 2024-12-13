@@ -8,7 +8,7 @@ module Data.ByteString.Base32 (
   , as_word5
   , as_bech32
 
-  -- not base32-related, but convenient to put here
+  -- not actually base32-related, but convenient to put here
   , Encoding(..)
   , create_checksum
   , verify_checksum
@@ -48,37 +48,12 @@ bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 -- adapted from emilypi's 'base32' library
-arrange :: Word32 -> Word32 -> BSB.Builder
-arrange w32 w8 =
-  let mask = 0b00011111
-      bech32_char = fi . BS.index bech32_charset . fi
-
-      w8_0 = bech32_char (mask .&. (w32 `B.shiftR` 27))
-      w8_1 = bech32_char (mask .&. (w32 `B.shiftR` 22))
-      w8_2 = bech32_char (mask .&. (w32 `B.shiftR` 17))
-      w8_3 = bech32_char (mask .&. (w32 `B.shiftR` 12))
-      w8_4 = bech32_char (mask .&. (w32 `B.shiftR` 07))
-      w8_5 = bech32_char (mask .&. (w32 `B.shiftR` 02))
-      w8_6 = bech32_char (mask .&. (w32 `B.shiftL` 03 .|. w8 `B.shiftR` 05))
-      w8_7 = bech32_char (mask .&. w8)
-
-      w64 = w8_0
-        .|. w8_1 `B.shiftL` 8
-        .|. w8_2 `B.shiftL` 16
-        .|. w8_3 `B.shiftL` 24
-        .|. w8_4 `B.shiftL` 32
-        .|. w8_5 `B.shiftL` 40
-        .|. w8_6 `B.shiftL` 48
-        .|. w8_7 `B.shiftL` 56
-
-  in  BSB.word64LE w64
-
--- adapted from emilypi's 'base32' library
 encode :: BS.ByteString -> BS.ByteString
 encode dat = toStrict (go dat) where
   bech32_char = fi . BS.index bech32_charset . fi
   go bs = case BS.splitAt 5 bs of
     (chunk, etc) -> case BS.length etc of
+      -- https://datatracker.ietf.org/doc/html/rfc4648#section-6
       0 | BS.length chunk == 5 -> case BS.unsnoc chunk of
             Nothing -> error "impossible, chunk length is 5"
             Just (word32be -> w32, fi -> w8) -> arrange w32 w8
@@ -142,6 +117,32 @@ encode dat = toStrict (go dat) where
       _ -> case BS.unsnoc chunk of
         Nothing -> error "impossible, chunk length is 5"
         Just (word32be -> w32, fi -> w8) -> arrange w32 w8 <> go etc
+
+-- adapted from emilypi's 'base32' library
+arrange :: Word32 -> Word32 -> BSB.Builder
+arrange w32 w8 =
+  let mask = 0b00011111
+      bech32_char = fi . BS.index bech32_charset . fi
+
+      w8_0 = bech32_char (mask .&. (w32 `B.shiftR` 27))
+      w8_1 = bech32_char (mask .&. (w32 `B.shiftR` 22))
+      w8_2 = bech32_char (mask .&. (w32 `B.shiftR` 17))
+      w8_3 = bech32_char (mask .&. (w32 `B.shiftR` 12))
+      w8_4 = bech32_char (mask .&. (w32 `B.shiftR` 07))
+      w8_5 = bech32_char (mask .&. (w32 `B.shiftR` 02))
+      w8_6 = bech32_char (mask .&. (w32 `B.shiftL` 03 .|. w8 `B.shiftR` 05))
+      w8_7 = bech32_char (mask .&. w8)
+
+      w64 = w8_0
+        .|. w8_1 `B.shiftL` 8
+        .|. w8_2 `B.shiftL` 16
+        .|. w8_3 `B.shiftL` 24
+        .|. w8_4 `B.shiftL` 32
+        .|. w8_5 `B.shiftL` 40
+        .|. w8_6 `B.shiftL` 48
+        .|. w8_7 `B.shiftL` 56
+
+  in  BSB.word64LE w64
 
 -- naive base32 -> word5
 as_word5 :: BS.ByteString -> BS.ByteString
