@@ -206,7 +206,7 @@ create_checksum enc hrp dat =
 
 verify_checksum :: Encoding -> BS.ByteString -> BS.ByteString -> Bool
 verify_checksum enc hrp dat =
-  let bs = hrp_expand hrp <> dat
+  let bs = hrp_expand hrp <> as_word5 dat
   in  polymod bs == case enc of
         Bech32 -> 1
         Bech32m -> _BECH32M_CONST

@@ -22,10 +22,9 @@ library
   hs-source-dirs:   lib
   ghc-options:
       -Wall
-  other-modules:
-      Data.ByteString.Base32
   exposed-modules:
-      Data.ByteString.Bech32
+      Data.ByteString.Base32
+    , Data.ByteString.Bech32
     , Data.ByteString.Bech32m
   build-depends:
       base >= 4.9 && < 5

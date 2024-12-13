@@ -17,15 +17,31 @@ toStrict :: BSB.Builder -> BS.ByteString
 toStrict = BS.toStrict
   . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
 
-verify_checksum :: BS.ByteString -> BS.ByteString -> Bool
-verify_checksum = B32.verify_checksum Bech32m
-
--- XX no need for this to be here
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32m
 
--- base255 -> bech32m
-encode :: BS.ByteString -> BS.ByteString -> Maybe BS.ByteString
+-- | Verify a Bech32m checksum, given human-readable and data parts.
+--
+--   >>> let Just bech32m = encode "bc" "my string"
+--   >>> verify_checksum "bc" "d4ujqum5wf5kuecwqlxtg"
+--   True
+--   >>> verify_checksum "bc" "d4ujquw5wf5kuecwqlxtg" -- s/m/w
+--   False
+verify_checksum
+  :: BS.ByteString -- ^ base255-encoded human-readable part
+  -> BS.ByteString -- ^ bech32-encoded data part
+  -> Bool
+verify_checksum = B32.verify_checksum Bech32m
+
+-- | Encode a base255 human-readable part and input as Bech32m.
+--
+--   >>> let Just bech32m = encode "bc" "my string"
+--   >>> bech32m
+--   "bc1d4ujqum5wf5kuecwqlxtg"
+encode
+  :: BS.ByteString        -- ^ base255-encoded human-readable part
+  -> BS.ByteString        -- ^ base255-encoded data part
+  -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
 encode hrp (B32.encode -> dat) = do
   guard (B32.valid_hrp hrp)
   let check = create_checksum hrp (B32.as_word5 dat)
