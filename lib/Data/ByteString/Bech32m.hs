@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns #-}
 
-module Data.ByteString.Bech32 (
+module Data.ByteString.Bech32m (
     encode
   , verify_checksum
   ) where
@@ -18,10 +18,11 @@ toStrict = BS.toStrict
   . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
 
 verify_checksum :: BS.ByteString -> BS.ByteString -> Bool
-verify_checksum = B32.verify_checksum Bech32
+verify_checksum = B32.verify_checksum Bech32m
 
+-- XX no need for this to be here
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
-create_checksum = B32.create_checksum Bech32
+create_checksum = B32.create_checksum Bech32m
 
 -- base255 -> bech32m
 encode :: BS.ByteString -> BS.ByteString -> Maybe BS.ByteString
