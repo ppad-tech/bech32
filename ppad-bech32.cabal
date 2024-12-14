@@ -56,13 +56,17 @@ benchmark bech32-bench
   default-language:    Haskell2010
   hs-source-dirs:      bench
   main-is:             Main.hs
+  other-modules:
+      Reference.Bech32
 
   ghc-options:
     -rtsopts -O2 -Wall
 
   build-depends:
       base
+    , array
     , bytestring
     , criterion
+    , deepseq
     , ppad-bech32
 

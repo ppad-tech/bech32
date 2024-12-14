@@ -30,8 +30,9 @@ A sample GHCi session:
 
 ## Performance
 
-The aim is best-in-class performance for pure, highly-auditable Haskell
-code.
+The eventual aim is best-in-class performance for pure, highly-auditable
+Haskell code. At present we're roughly equivalent to (perhaps slightly
+faster than) the official BIP173 reference implementation.
 
 Current benchmark figures on my mid-2020 MacBook Air look like (use
 `cabal bench` to run the benchmark suite):
