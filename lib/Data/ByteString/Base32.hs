@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide, prune #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE OverloadedStrings #-}

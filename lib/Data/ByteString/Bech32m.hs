@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK prune #-}
 {-# LANGUAGE ViewPatterns #-}
 
 -- |
@@ -11,10 +12,10 @@
 -- bech32m checksummed base32 encoding, with checksum verification.
 
 module Data.ByteString.Bech32m (
-    -- * encoding
+    -- * Encoding
     encode
 
-    -- * checksum verification
+    -- * Checksum
   , verify
   ) where
 
