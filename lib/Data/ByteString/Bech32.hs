@@ -32,6 +32,7 @@ import qualified Data.Char as C (toLower)
 toStrict :: BSB.Builder -> BS.ByteString
 toStrict = BS.toStrict
   . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
+{-# INLINE toStrict #-}
 
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32

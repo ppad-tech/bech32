@@ -32,6 +32,7 @@ import qualified Data.Char as C (toLower)
 toStrict :: BSB.Builder -> BS.ByteString
 toStrict = BS.toStrict
   . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
+{-# INLINE toStrict #-}
 
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32m
@@ -44,7 +45,7 @@ create_checksum = B32.create_checksum Bech32m
 encode
   :: BS.ByteString        -- ^ base255-encoded human-readable part
   -> BS.ByteString        -- ^ base255-encoded data part
-  -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
+  -> Maybe BS.ByteString  -- ^ bech32m-encoded bytestring
 encode hrp (B32.encode -> dat) = do
   guard (B32.valid_hrp hrp)
   let check = create_checksum hrp (B32.as_word5 dat)

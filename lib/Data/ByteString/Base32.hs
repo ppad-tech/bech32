@@ -44,6 +44,7 @@ word32be s =
 toStrict :: BSB.Builder -> BS.ByteString
 toStrict = BS.toStrict
   . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
+{-# INLINE toStrict #-}
 
 bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
@@ -52,6 +53,7 @@ bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 encode :: BS.ByteString -> BS.ByteString
 encode dat = toStrict (go dat) where
   bech32_char = fi . BS.index bech32_charset . fi
+
   go bs = case BS.splitAt 5 bs of
     (chunk, etc) -> case BS.length etc of
       -- https://datatracker.ietf.org/doc/html/rfc4648#section-6
@@ -63,7 +65,11 @@ encode dat = toStrict (go dat) where
             let a = BU.unsafeIndex chunk 0
                 t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
                 u = bech32_char ((a .&. 0b00000111) `B.shiftL` 2)
-            in  BSB.word8 t <> BSB.word8 u
+
+                !w16 = fi t
+                   .|. fi u `B.shiftL` 8
+
+            in  BSB.word16LE w16
 
         | BS.length chunk == 2 ->
             let a = BU.unsafeIndex chunk 0
@@ -74,7 +80,13 @@ encode dat = toStrict (go dat) where
                       .|. ((b .&. 0b11000000) `B.shiftR` 6)
                 v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
                 w = bech32_char ((b .&. 0b00000001) `B.shiftL` 4)
-            in  BSB.word8 t <> BSB.word8 u <> BSB.word8 v <> BSB.word8 w
+
+                !w32 = fi t
+                   .|. fi u `B.shiftL` 8
+                   .|. fi v `B.shiftL` 16
+                   .|. fi w `B.shiftL` 24
+
+            in  BSB.word32LE w32
 
         | BS.length chunk == 3 ->
             let a = BU.unsafeIndex chunk 0
@@ -89,8 +101,13 @@ encode dat = toStrict (go dat) where
                           ((b .&. 0b00000001) `B.shiftL` 4)
                       .|. ((c .&. 0b11110000) `B.shiftR` 4)
                 x = bech32_char ((c .&. 0b00001111) `B.shiftL` 1)
-            in  BSB.word8 t <> BSB.word8 u <> BSB.word8 v <> BSB.word8 w
-                <> BSB.word8 x
+
+                !w32 = fi t
+                   .|. fi u `B.shiftL` 8
+                   .|. fi v `B.shiftL` 16
+                   .|. fi w `B.shiftL` 24
+
+            in  BSB.word32LE w32 <> BSB.word8 x
 
         | BS.length chunk == 4 ->
             let a = BU.unsafeIndex chunk 0
@@ -110,8 +127,16 @@ encode dat = toStrict (go dat) where
                       .|. ((d .&. 0b10000000) `B.shiftR` 7)
                 y = bech32_char ((d .&. 0b01111100) `B.shiftR` 2)
                 z = bech32_char ((d .&. 0b00000011) `B.shiftL` 3)
-            in  BSB.word8 t <> BSB.word8 u <> BSB.word8 v <> BSB.word8 w
-                <> BSB.word8 x <> BSB.word8 y <> BSB.word8 z
+
+                !w32 = fi t
+                   .|. fi u `B.shiftL` 8
+                   .|. fi v `B.shiftL` 16
+                   .|. fi w `B.shiftL` 24
+
+                !w16 = fi x
+                   .|. fi y `B.shiftL` 8
+
+            in  BSB.word32LE w32 <> BSB.word16LE w16 <> BSB.word8 z
 
         | otherwise -> mempty
 
@@ -134,7 +159,7 @@ arrange w32 w8 =
       w8_6 = bech32_char (mask .&. (w32 `B.shiftL` 03 .|. w8 `B.shiftR` 05))
       w8_7 = bech32_char (mask .&. w8)
 
-      w64 = w8_0
+      !w64 = w8_0
         .|. w8_1 `B.shiftL` 8
         .|. w8_2 `B.shiftL` 16
         .|. w8_3 `B.shiftL` 24
@@ -144,6 +169,7 @@ arrange w32 w8 =
         .|. w8_7 `B.shiftL` 56
 
   in  BSB.word64LE w64
+{-# INLINE arrange #-}
 
 -- naive base32 -> word5
 as_word5 :: BS.ByteString -> BS.ByteString
@@ -209,7 +235,7 @@ verify :: Encoding -> BS.ByteString -> Bool
 verify enc b32 = case BS.elemIndexEnd 0x31 b32 of
   Nothing  -> False
   Just idx ->
-    let (hrp, BS.drop 1 -> dat) = BS.splitAt idx b32
+    let (hrp, BU.unsafeDrop 1 -> dat) = BS.splitAt idx b32
         bs = hrp_expand hrp <> as_word5 dat
     in  polymod bs == case enc of
           Bech32 -> 1
