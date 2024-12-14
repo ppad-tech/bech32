@@ -2,7 +2,7 @@
 
 module Data.ByteString.Bech32m (
     encode
-  , verify_checksum
+  , verify
   ) where
 
 import Control.Monad (guard)
@@ -20,18 +20,16 @@ toStrict = BS.toStrict
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32m
 
--- | Verify a Bech32m checksum, given human-readable and data parts.
+-- | Verify that a bech32m string has a valid checksum.
 --
---   >>> let Just bech32m = encode "bc" "my string"
---   >>> verify_checksum "bc" "d4ujqum5wf5kuecwqlxtg"
+--   >>> verify "bc1d4ujqum5wf5kuecwqlxtg"
 --   True
---   >>> verify_checksum "bc" "d4ujquw5wf5kuecwqlxtg" -- s/m/w
+--   >>> verify "bc1d4ujquw5wf5kuecwqlxtg" -- s/m/w
 --   False
-verify_checksum
-  :: BS.ByteString -- ^ base255-encoded human-readable part
-  -> BS.ByteString -- ^ bech32-encoded data part
+verify
+  :: BS.ByteString -- ^ bech32m-encoded bytestring
   -> Bool
-verify_checksum = B32.verify_checksum Bech32m
+verify = B32.verify Bech32m
 
 -- | Encode a base255 human-readable part and input as Bech32m.
 --

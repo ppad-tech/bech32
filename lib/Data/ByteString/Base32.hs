@@ -11,7 +11,7 @@ module Data.ByteString.Base32 (
   -- not actually base32-related, but convenient to put here
   , Encoding(..)
   , create_checksum
-  , verify_checksum
+  , verify
   , valid_hrp
   ) where
 
@@ -204,10 +204,13 @@ create_checksum enc hrp dat =
 
   in  BS.map code "\EM\DC4\SI\n\ENQ\NUL" -- BS.pack [25, 20, 15, 10, 5, 0]
 
-verify_checksum :: Encoding -> BS.ByteString -> BS.ByteString -> Bool
-verify_checksum enc hrp dat =
-  let bs = hrp_expand hrp <> as_word5 dat
-  in  polymod bs == case enc of
-        Bech32 -> 1
-        Bech32m -> _BECH32M_CONST
+verify :: Encoding -> BS.ByteString -> Bool
+verify enc b32 = case BS.elemIndexEnd 0x31 b32 of
+  Nothing  -> False
+  Just idx ->
+    let (hrp, BS.drop 1 -> dat) = BS.splitAt idx b32
+        bs = hrp_expand hrp <> as_word5 dat
+    in  polymod bs == case enc of
+          Bech32 -> 1
+          Bech32m -> _BECH32M_CONST
 
