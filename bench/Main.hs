@@ -7,6 +7,7 @@ module Main where
 
 import Criterion.Main
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base32 as Base32
 import qualified Data.ByteString.Bech32 as Bech32
 import GHC.Generics
 import qualified Reference.Bech32 as R
@@ -20,24 +21,34 @@ main = defaultMain [
     suite
   ]
 
+base32 :: Benchmark
+base32 = bgroup "base32 encode" [
+    bench "120b" $ nf Base32.encode "jtobin was here"
+  , bench "128b (non 40-bit multiple length)" $
+      nf Base32.encode "jtobin was here!"
+  , bench "240b" $ nf Base32.encode "jtobin was herejtobin was here"
+  ]
+
+bech32 :: Benchmark
+bech32 = bgroup "bech32 encode" [
+    bench "120b" $ nf (Bech32.encode "bc") "jtobin was here"
+  , bench "128b (non 40-bit multiple length)" $
+      nf (Bech32.encode "bc") "jtobin was here!"
+  , bench "240b" $ nf (Bech32.encode "bc") "jtobin was herejtobin was here"
+  ]
+
 suite :: Benchmark
 suite = env setup $ \ ~(a, b, c) -> bgroup "benchmarks" [
       bgroup "ppad-bech32" [
-        bgroup "bech32" [
-            bench "120b" $ whnf (Bech32.encode "bc")
-              "jtobin was here"
-          , bench "128b (non 40-bit multiple length)" $ whnf (Bech32.encode "bc")
-              "jtobin was here!"
-          , bench "240b" $ whnf (Bech32.encode "bc")
-              "jtobin was herejtobin was here"
-        ]
+          base32
+        , bech32
       ]
     , bgroup "reference" [
         bgroup "bech32" [
-            bench "120b" $ whnf (R.bech32Encode "bc") a
+            bench "120b" $ nf (R.bech32Encode "bc") a
           , bench "128b (non 40-bit multiple length)" $
-              whnf (R.bech32Encode "bc") b
-          , bench "240b" $ whnf (R.bech32Encode "bc") c
+              nf (R.bech32Encode "bc") b
+          , bench "240b" $ nf (R.bech32Encode "bc") c
         ]
       ]
     ]
