@@ -1,1 +1,3 @@
 dist-newstyle/
+*prof
+cabal.project.local
