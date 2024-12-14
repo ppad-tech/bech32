@@ -1,7 +1,20 @@
 {-# LANGUAGE ViewPatterns #-}
 
+-- |
+-- Module: Data.ByteString.Bech32m
+-- Copyright: (c) 2024 Jared Tobin
+-- License: MIT
+-- Maintainer: Jared Tobin <jared@ppad.tech>
+--
+-- The
+-- [BIP350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki)
+-- bech32m checksummed base32 encoding, with checksum verification.
+
 module Data.ByteString.Bech32m (
+    -- * encoding
     encode
+
+    -- * checksum verification
   , verify
   ) where
 
@@ -22,17 +35,6 @@ toStrict = BS.toStrict
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32m
 
--- | Verify that a bech32m string has a valid checksum.
---
---   >>> verify "bc1d4ujqum5wf5kuecwqlxtg"
---   True
---   >>> verify "bc1d4ujquw5wf5kuecwqlxtg" -- s/m/w
---   False
-verify
-  :: BS.ByteString -- ^ bech32m-encoded bytestring
-  -> Bool
-verify = B32.verify Bech32m
-
 -- | Encode a base255 human-readable part and input as bech32m.
 --
 --   >>> let Just bech32m = encode "bc" "my string"
@@ -52,4 +54,15 @@ encode hrp (B32.encode -> dat) = do
         <> BSB.byteString (B32.as_base32 check)
   guard (BS.length res < 91)
   pure res
+
+-- | Verify that a bech32m string has a valid checksum.
+--
+--   >>> verify "bc1d4ujqum5wf5kuecwqlxtg"
+--   True
+--   >>> verify "bc1d4ujquw5wf5kuecwqlxtg" -- s/m/w
+--   False
+verify
+  :: BS.ByteString -- ^ bech32m-encoded bytestring
+  -> Bool
+verify = B32.verify Bech32m
 
