@@ -1,7 +1,7 @@
 # ppad-bech32
 
-A pure Haskell implementation of the bech32m and bech32 encodings on strict
-ByteStrings, as specified by [BIP173][bi173] and [BIP350][bi350].
+A pure Haskell implementation of the bech32m and bech32 encodings on
+strict ByteStrings, as specified by [BIP350][bi350] and [BIP173][bi173].
 
 ## Usage
 
