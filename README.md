@@ -19,10 +19,13 @@ A sample GHCi session:
   > bech32m
   "bc1vys8xarpdejxzunyypmk7uny8qsxy7t5v4ehgunfdenswyuz0e"
   >
-  > -- verify a bech32m checksum, given the HRP and data parts
-  > let dat = "vys8xarpdejxzunyypmk7uny8qsxy7t5v4ehgunfdenswyuz0e"
-  > Bech32m.verify_checksum "bc" dat
+  > -- verify that a bech32m string has a valid checksum
+  > Bech32m.verify bech32
   True
+  >
+  > -- tweaked stuff will obviously fail to verify (s/m/w below)
+  > Bech32m.verify "bc1vys8xarpdejxzunyypwk7uny8qsxy7t5v4ehgunfdenswyuz0e"
+  False
 ```
 
 ## Performance

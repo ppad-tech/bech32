@@ -11,7 +11,7 @@ build-type:         Simple
 tested-with:        GHC == 9.8.1
 extra-doc-files:    CHANGELOG
 description:
-  BIP173 bech32 & BIP350 bech32m encoding/decoding on strict ByteStrings.
+  BIP173 bech32 & BIP350 bech32m encoding on strict ByteStrings.
 
 source-repository head
   type:     git

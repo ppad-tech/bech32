@@ -6,7 +6,6 @@
 module Data.ByteString.Base32 (
     encode
   , as_word5
-  , as_bech32
   , as_base32
 
   -- not actually base32-related, but convenient to put here
