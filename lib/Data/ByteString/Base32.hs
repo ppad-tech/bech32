@@ -7,6 +7,7 @@ module Data.ByteString.Base32 (
     encode
   , as_word5
   , as_bech32
+  , as_base32
 
   -- not actually base32-related, but convenient to put here
   , Encoding(..)
@@ -152,8 +153,8 @@ as_word5 = BS.map f where
     Just w -> fi w
 
 -- naive word5 -> base32
-as_bech32 :: BS.ByteString -> BS.ByteString
-as_bech32 = BS.map (BS.index bech32_charset . fi)
+as_base32 :: BS.ByteString -> BS.ByteString
+as_base32 = BS.map (BS.index bech32_charset . fi)
 
 polymod :: BS.ByteString -> Word32
 polymod = BS.foldl' alg 1 where

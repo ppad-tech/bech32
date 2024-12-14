@@ -47,7 +47,7 @@ encode hrp (B32.encode -> dat) = do
            BSB.byteString hrp
         <> BSB.word8 49 -- 1
         <> BSB.byteString dat
-        <> BSB.byteString (B32.as_bech32 check)
+        <> BSB.byteString (B32.as_base32 check)
   guard (BS.length res < 91)
   pure res
 
