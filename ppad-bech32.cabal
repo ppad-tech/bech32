@@ -41,14 +41,10 @@ test-suite bech32-tests
     -rtsopts -Wall -O2
 
   build-depends:
-      aeson
-    , base
-    , base16-bytestring
-    , bytestring
+      base
     , ppad-bech32
     , tasty
-    , tasty-hunit
-    , text
+    , tasty-quickcheck
 
 benchmark bech32-bench
   type:                exitcode-stdio-1.0
