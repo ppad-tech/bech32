@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
+
 -- official BIP173 reference
 -- https://github.com/sipa/bech32/tree/master/ref/haskell
 module Reference.Bech32

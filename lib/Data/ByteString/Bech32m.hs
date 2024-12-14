@@ -7,10 +7,12 @@ module Data.ByteString.Bech32m (
 
 import Control.Monad (guard)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Base32 as B32
 import Data.ByteString.Base32 (Encoding(..))
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
+import qualified Data.Char as C (toLower)
 
 -- realization for small builders
 toStrict :: BSB.Builder -> BS.ByteString
@@ -44,7 +46,7 @@ encode hrp (B32.encode -> dat) = do
   guard (B32.valid_hrp hrp)
   let check = create_checksum hrp (B32.as_word5 dat)
       res = toStrict $
-           BSB.byteString hrp
+           BSB.byteString (B8.map C.toLower hrp)
         <> BSB.word8 49 -- 1
         <> BSB.byteString dat
         <> BSB.byteString (B32.as_base32 check)
