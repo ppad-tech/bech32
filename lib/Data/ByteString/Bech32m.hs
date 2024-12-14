@@ -31,7 +31,7 @@ verify
   -> Bool
 verify = B32.verify Bech32m
 
--- | Encode a base255 human-readable part and input as Bech32m.
+-- | Encode a base255 human-readable part and input as bech32m.
 --
 --   >>> let Just bech32m = encode "bc" "my string"
 --   >>> bech32m
