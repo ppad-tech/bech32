@@ -1,5 +1,8 @@
 # Changelog
 
+- 0.1.2 (2024-12-15)
+  * Minor performance improvements.
+
 - 0.1.1 (2024-12-14)
   * Simply improves generated Haddocks.
 
