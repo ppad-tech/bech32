@@ -37,14 +37,14 @@ toStrict = BS.toStrict
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = B32.create_checksum Bech32m
 
--- | Encode a base255 human-readable part and input as bech32m.
+-- | Encode a base256 human-readable part and input as bech32m.
 --
 --   >>> let Just bech32m = encode "bc" "my string"
 --   >>> bech32m
 --   "bc1d4ujqum5wf5kuecwqlxtg"
 encode
-  :: BS.ByteString        -- ^ base255-encoded human-readable part
-  -> BS.ByteString        -- ^ base255-encoded data part
+  :: BS.ByteString        -- ^ base256-encoded human-readable part
+  -> BS.ByteString        -- ^ base256-encoded data part
   -> Maybe BS.ByteString  -- ^ bech32m-encoded bytestring
 encode hrp (B32.encode -> dat) = do
   guard (B32.valid_hrp hrp)
