@@ -28,6 +28,11 @@ A sample GHCi session:
   False
 ```
 
+## Documentation
+
+Haddocks (API documentation, etc.) are hosted at
+[docs.ppad.tech/bech32](https://docs.ppad.tech/bech32).
+
 ## Performance
 
 The aim is best-in-class performance for pure, highly-auditable Haskell
