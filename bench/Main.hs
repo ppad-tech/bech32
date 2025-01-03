@@ -39,15 +39,11 @@ base32_decode = bgroup "base32 decode" [
 bech32_encode :: Benchmark
 bech32_encode = bgroup "bech32 encode" [
     bench "120b" $ nf (Bech32.encode "bc") "jtobin was here"
-  , bench "128b (non 40-bit multiple length)" $
-      nf (Bech32.encode "bc") "jtobin was here!"
   ]
 
 bech32_decode :: Benchmark
 bech32_decode = bgroup "bech32 decode" [
     bench "120b" $ nf Bech32.decode "bc1df6x7cnfdcs8wctnyp5x2un9f0pw8y"
-  , bench "128b (non 40-bit multiple length)" $
-      nf Bech32.decode "bc1df6x7cnfdcs8wctnyp5x2un9yyg90e5y"
   ]
 
 suite :: Benchmark

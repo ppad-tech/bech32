@@ -18,6 +18,7 @@ import qualified Data.Bits as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
+import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
 import qualified Data.Primitive.PrimArray as PA
 import Data.Word (Word32)
@@ -68,11 +69,9 @@ polymod = BS.foldl' alg 1 where
         in  loop_gen (succ i) b (chk `B.xor` sor)
 
 valid_hrp :: BS.ByteString -> Bool
-valid_hrp hrp
-    | l == 0 || l > 83 = False
-    | otherwise = BS.all (\b -> (b > 32) && (b < 127)) hrp
-  where
-    l = BS.length hrp
+valid_hrp hrp@(BI.PS _ _ l)
+  | l == 0 || l > 83 = False
+  | otherwise = BS.all (\b -> (b > 32) && (b < 127)) hrp
 
 hrp_expand :: BS.ByteString -> BS.ByteString
 hrp_expand bs = toStrict

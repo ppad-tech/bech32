@@ -226,8 +226,8 @@ finalize bs@(BI.PS _ _ l)
                     .|. w5_2 `B.shiftL` 1
                     .|. w5_3 `B.shiftR` 4
 
-                 w16 = fi w8_1
-                   .|. fi w8_0 `B.shiftL` 8
+                 !w16 = fi w8_1
+                    .|. fi w8_0 `B.shiftL` 8
 
              guard (w5_3 `B.shiftL` 4 == 0)
              pure (BSB.word16BE w16)
@@ -286,16 +286,16 @@ decode_chunk bs = do
   w5_7 <- word5 (BU.unsafeIndex bs 7)
 
   let w40 :: Word64
-      w40 = fi w5_0 `B.shiftL` 35
-        .|. fi w5_1 `B.shiftL` 30
-        .|. fi w5_2 `B.shiftL` 25
-        .|. fi w5_3 `B.shiftL` 20
-        .|. fi w5_4 `B.shiftL` 15
-        .|. fi w5_5 `B.shiftL` 10
-        .|. fi w5_6 `B.shiftL` 05
-        .|. fi w5_7
-      w32 = fi (w40 `B.shiftR` 8)   :: Word32
-      w8  = fi (0b11111111 .&. w40) :: Word8
+      !w40 = fi w5_0 `B.shiftL` 35
+         .|. fi w5_1 `B.shiftL` 30
+         .|. fi w5_2 `B.shiftL` 25
+         .|. fi w5_3 `B.shiftL` 20
+         .|. fi w5_4 `B.shiftL` 15
+         .|. fi w5_5 `B.shiftL` 10
+         .|. fi w5_6 `B.shiftL` 05
+         .|. fi w5_7
+      !w32 = fi (w40 `B.shiftR` 8)   :: Word32
+      !w8  = fi (0b11111111 .&. w40) :: Word8
 
   pure $ BSB.word32BE w32 <> BSB.word8 w8
 
