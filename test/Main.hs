@@ -50,10 +50,12 @@ decode_inverts_encode (BS bs) = case B32.decode (B32.encode bs) of
 main :: IO ()
 main = defaultMain $ testGroup "ppad-bech32" [
     testGroup "base32" [
-      Q.testProperty "decode . encode ~ id" decode_inverts_encode
+      Q.testProperty "decode . encode ~ id" $
+        Q.withMaxSuccess 1000 decode_inverts_encode
     ]
   , testGroup "bech32" [
-      Q.testProperty "Bech32.encode ~ R.bech32Encode" matches
+      Q.testProperty "Bech32.encode ~ R.bech32Encode" $
+        Q.withMaxSuccess 1000 matches
     ]
   ]
 
