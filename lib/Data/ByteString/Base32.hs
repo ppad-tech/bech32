@@ -215,11 +215,11 @@ finalize bs@(BI.PS _ _ l)
              .|. w5_1 `B.shiftR` 2
 
       -- https://datatracker.ietf.org/doc/html/rfc4648#section-6
-      if | l == 2 -> do -- 2 w5's, need 1 w8 (XX final 2 bits?)
-             guard (w5_1 `B.shiftL` 6 == 0) -- lowest 2 bits -- XX
+      if | l == 2 -> do -- 2 w5's, need 1 w8; 2 bits remain
+             guard (w5_1 `B.shiftL` 6 == 0)
              pure (BSB.word8 w8_0)
 
-         | l == 4 -> do -- 4 w5's, need 2 w8's
+         | l == 4 -> do -- 4 w5's, need 2 w8's; 4 bits remain
              w5_2 <- word5 (BU.unsafeIndex bs 2)
              w5_3 <- word5 (BU.unsafeIndex bs 3)
              let w8_1 = w5_1 `B.shiftL` 6
@@ -229,10 +229,10 @@ finalize bs@(BI.PS _ _ l)
                  w16 = fi w8_1
                    .|. fi w8_0 `B.shiftL` 8
 
-             guard (w5_3 `B.shiftL` 4 == 0) -- lowest 4 bits
-             pure (BSB.word16LE w16)
+             guard (w5_3 `B.shiftL` 4 == 0)
+             pure (BSB.word16BE w16)
 
-         | l == 5 -> do -- 5 w5's, need 3 w8's
+         | l == 5 -> do -- 5 w5's, need 3 w8's; 1 bit remains
              w5_2 <- word5 (BU.unsafeIndex bs 2)
              w5_3 <- word5 (BU.unsafeIndex bs 3)
              w5_4 <- word5 (BU.unsafeIndex bs 4)
@@ -245,10 +245,10 @@ finalize bs@(BI.PS _ _ l)
                  w16  = fi w8_1
                     .|. fi w8_0 `B.shiftL` 8
 
-             guard (w5_4 `B.shiftL` 7 == 0) -- lowest bit
-             pure (BSB.word16LE w16 <> BSB.word8 w8_2)
+             guard (w5_4 `B.shiftL` 7 == 0)
+             pure (BSB.word16BE w16 <> BSB.word8 w8_2)
 
-         | l == 7 -> do -- 7 w5's, need 4 w8's
+         | l == 7 -> do -- 7 w5's, need 4 w8's; 3 bits remain
              w5_2 <- word5 (BU.unsafeIndex bs 2)
              w5_3 <- word5 (BU.unsafeIndex bs 3)
              w5_4 <- word5 (BU.unsafeIndex bs 4)
@@ -265,11 +265,11 @@ finalize bs@(BI.PS _ _ l)
 
                  w32  = fi w8_3
                     .|. fi w8_2 `B.shiftL` 8
-                    .|. fi w8_2 `B.shiftL` 16
-                    .|. fi w8_1 `B.shiftL` 24
+                    .|. fi w8_1 `B.shiftL` 16
+                    .|. fi w8_0 `B.shiftL` 24
 
-             guard (w5_6 `B.shiftL` 5 == 0) -- lowest 3 bits
-             pure (BSB.word32LE w32)
+             guard (w5_6 `B.shiftL` 5 == 0)
+             pure (BSB.word32BE w32)
 
          | otherwise -> Nothing
 
