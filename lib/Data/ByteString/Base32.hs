@@ -28,6 +28,7 @@ import qualified Data.Bits as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
+import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
 import Data.Word (Word8, Word32, Word64)
 
@@ -93,95 +94,88 @@ encode
 encode dat = toStrict (go dat) where
   bech32_char = fi . BS.index bech32_charset . fi
 
-  go bs = case BS.splitAt 5 bs of
-    (chunk, etc) -> case BS.length etc of
-      -- https://datatracker.ietf.org/doc/html/rfc4648#section-6
-      0 | BS.length chunk == 5 -> case BS.unsnoc chunk of
-            Nothing -> error "impossible, chunk length is 5"
-            Just (word32be -> w32, fi -> w8) -> arrange w32 w8
+  go bs@(BI.PS _ _ l)
+    | l >= 5 = case BS.splitAt 5 bs of
+        (chunk, etc) -> case BS.unsnoc chunk of
+          Nothing -> error "impossible, chunk length is 5"
+          Just (word32be -> w32, w8) -> arrange w32 w8 <> go etc
+    | l == 0 = mempty
+    | l == 1 =
+        let a = BU.unsafeIndex bs 0
+            t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
+            u = bech32_char ((a .&. 0b00000111) `B.shiftL` 2)
 
-        | BS.length chunk == 1 ->
-            let a = BU.unsafeIndex chunk 0
-                t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
-                u = bech32_char ((a .&. 0b00000111) `B.shiftL` 2)
+            !w16 = fi t
+               .|. fi u `B.shiftL` 8
 
-                !w16 = fi t
-                   .|. fi u `B.shiftL` 8
+        in  BSB.word16LE w16
+    | l == 2 =
+        let a = BU.unsafeIndex bs 0
+            b = BU.unsafeIndex bs 1
+            t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
+            u = bech32_char $
+                      ((a .&. 0b00000111) `B.shiftL` 2)
+                  .|. ((b .&. 0b11000000) `B.shiftR` 6)
+            v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
+            w = bech32_char ((b .&. 0b00000001) `B.shiftL` 4)
 
-            in  BSB.word16LE w16
+            !w32 = fi t
+               .|. fi u `B.shiftL` 8
+               .|. fi v `B.shiftL` 16
+               .|. fi w `B.shiftL` 24
 
-        | BS.length chunk == 2 ->
-            let a = BU.unsafeIndex chunk 0
-                b = BU.unsafeIndex chunk 1
-                t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
-                u = bech32_char $
-                          ((a .&. 0b00000111) `B.shiftL` 2)
-                      .|. ((b .&. 0b11000000) `B.shiftR` 6)
-                v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
-                w = bech32_char ((b .&. 0b00000001) `B.shiftL` 4)
+        in  BSB.word32LE w32
+    | l == 3 =
+        let a = BU.unsafeIndex bs 0
+            b = BU.unsafeIndex bs 1
+            c = BU.unsafeIndex bs 2
+            t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
+            u = bech32_char $
+                      ((a .&. 0b00000111) `B.shiftL` 2)
+                  .|. ((b .&. 0b11000000) `B.shiftR` 6)
+            v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
+            w = bech32_char $
+                      ((b .&. 0b00000001) `B.shiftL` 4)
+                  .|. ((c .&. 0b11110000) `B.shiftR` 4)
+            x = bech32_char ((c .&. 0b00001111) `B.shiftL` 1)
 
-                !w32 = fi t
-                   .|. fi u `B.shiftL` 8
-                   .|. fi v `B.shiftL` 16
-                   .|. fi w `B.shiftL` 24
+            !w32 = fi t
+               .|. fi u `B.shiftL` 8
+               .|. fi v `B.shiftL` 16
+               .|. fi w `B.shiftL` 24
 
-            in  BSB.word32LE w32
+        in  BSB.word32LE w32 <> BSB.word8 x
+    | l == 4 =
+        let a = BU.unsafeIndex bs 0
+            b = BU.unsafeIndex bs 1
+            c = BU.unsafeIndex bs 2
+            d = BU.unsafeIndex bs 3
+            t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
+            u = bech32_char $
+                      ((a .&. 0b00000111) `B.shiftL` 2)
+                  .|. ((b .&. 0b11000000) `B.shiftR` 6)
+            v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
+            w = bech32_char $
+                      ((b .&. 0b00000001) `B.shiftL` 4)
+                  .|. ((c .&. 0b11110000) `B.shiftR` 4)
+            x = bech32_char $
+                      ((c .&. 0b00001111) `B.shiftL` 1)
+                  .|. ((d .&. 0b10000000) `B.shiftR` 7)
+            y = bech32_char ((d .&. 0b01111100) `B.shiftR` 2)
+            z = bech32_char ((d .&. 0b00000011) `B.shiftL` 3)
 
-        | BS.length chunk == 3 ->
-            let a = BU.unsafeIndex chunk 0
-                b = BU.unsafeIndex chunk 1
-                c = BU.unsafeIndex chunk 2
-                t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
-                u = bech32_char $
-                          ((a .&. 0b00000111) `B.shiftL` 2)
-                      .|. ((b .&. 0b11000000) `B.shiftR` 6)
-                v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
-                w = bech32_char $
-                          ((b .&. 0b00000001) `B.shiftL` 4)
-                      .|. ((c .&. 0b11110000) `B.shiftR` 4)
-                x = bech32_char ((c .&. 0b00001111) `B.shiftL` 1)
+            !w32 = fi t
+               .|. fi u `B.shiftL` 8
+               .|. fi v `B.shiftL` 16
+               .|. fi w `B.shiftL` 24
 
-                !w32 = fi t
-                   .|. fi u `B.shiftL` 8
-                   .|. fi v `B.shiftL` 16
-                   .|. fi w `B.shiftL` 24
+            !w16 = fi x
+               .|. fi y `B.shiftL` 8
 
-            in  BSB.word32LE w32 <> BSB.word8 x
+        in  BSB.word32LE w32 <> BSB.word16LE w16 <> BSB.word8 z
 
-        | BS.length chunk == 4 ->
-            let a = BU.unsafeIndex chunk 0
-                b = BU.unsafeIndex chunk 1
-                c = BU.unsafeIndex chunk 2
-                d = BU.unsafeIndex chunk 3
-                t = bech32_char ((a .&. 0b11111000) `B.shiftR` 3)
-                u = bech32_char $
-                          ((a .&. 0b00000111) `B.shiftL` 2)
-                      .|. ((b .&. 0b11000000) `B.shiftR` 6)
-                v = bech32_char ((b .&. 0b00111110) `B.shiftR` 1)
-                w = bech32_char $
-                          ((b .&. 0b00000001) `B.shiftL` 4)
-                      .|. ((c .&. 0b11110000) `B.shiftR` 4)
-                x = bech32_char $
-                          ((c .&. 0b00001111) `B.shiftL` 1)
-                      .|. ((d .&. 0b10000000) `B.shiftR` 7)
-                y = bech32_char ((d .&. 0b01111100) `B.shiftR` 2)
-                z = bech32_char ((d .&. 0b00000011) `B.shiftL` 3)
-
-                !w32 = fi t
-                   .|. fi u `B.shiftL` 8
-                   .|. fi v `B.shiftL` 16
-                   .|. fi w `B.shiftL` 24
-
-                !w16 = fi x
-                   .|. fi y `B.shiftL` 8
-
-            in  BSB.word32LE w32 <> BSB.word16LE w16 <> BSB.word8 z
-
-        | otherwise -> mempty
-
-      _ -> case BS.unsnoc chunk of
-        Nothing -> error "impossible, chunk length is 5"
-        Just (word32be -> w32, w8) -> arrange w32 w8 <> go etc
+    | otherwise =
+        error "impossible"
 
 -- | Decode a 'ByteString', encoded as base32 using the bech32 character
 --   set, to a base256-encoded 'ByteString'.
@@ -198,8 +192,8 @@ decode = handle . go mempty where
     Nothing -> Nothing
     Just s -> Just (toStrict s)
 
-  go acc bs
-    | BS.length bs < 8 = do
+  go acc bs@(BI.PS _ _ l)
+    | l < 8 = do
         fin <- finalize bs
         pure (acc <> fin)
     | otherwise = case BS.splitAt 8 bs of
@@ -208,7 +202,7 @@ decode = handle . go mempty where
            go (acc <> res) etc
 
 finalize :: BS.ByteString -> Maybe BSB.Builder
-finalize bs
+finalize bs@(BI.PS _ _ l)
     | l == 0 = Just mempty
     | otherwise = do
         guard (l >= 2)
@@ -277,7 +271,6 @@ finalize bs
            | otherwise -> Nothing
 
   where
-    l = BS.length bs
     word5 :: Int -> Maybe Word8
     word5 i = fmap fi (BS.elemIndex (fi (BU.unsafeIndex bs i)) bech32_charset)
 
