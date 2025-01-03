@@ -214,40 +214,41 @@ finalize bs
         guard (l >= 2)
         w5_0 <- word5 0
         w5_1 <- word5 1
-        let w8_0 = fi w5_0 `B.shiftL` 3
-               .|. fi w5_1 `B.shiftR` 2
+        let w8_0 = w5_0 `B.shiftL` 3
+               .|. w5_1 `B.shiftR` 2
 
         -- https://datatracker.ietf.org/doc/html/rfc4648#section-6
-        if | l == 2 -> do -- 2 w5's, need 1 w8
+        if | l == 2 -> do -- 2 w5's, need 1 w8 (XX final 2 bits?)
+               guard (w5_1 `B.shiftL` 6 == 0) -- lowest 2 bits -- XX
                pure (BSB.word8 w8_0)
 
            | l == 4 -> do -- 4 w5's, need 2 w8's
                w5_2 <- word5 2
                w5_3 <- word5 3
-               let w8_1 :: Word8
-                   w8_1 = fi w5_1 `B.shiftL` 6
-                      .|. fi w5_2 `B.shiftL` 1
-                      .|. fi w5_3 `B.shiftR` 4
+               let w8_1 = w5_1 `B.shiftL` 6
+                      .|. w5_2 `B.shiftL` 1
+                      .|. w5_3 `B.shiftR` 4
 
                    w16 = fi w8_1
                      .|. fi w8_0 `B.shiftL` 8
 
+               guard (w5_3 `B.shiftL` 4 == 0) -- lowest 4 bits
                pure (BSB.word16LE w16)
 
            | l == 5 -> do -- 5 w5's, need 3 w8's
                w5_2 <- word5 2
                w5_3 <- word5 3
                w5_4 <- word5 4
-               let w8_1, w8_2 :: Word8
-                   w8_1 = fi w5_1 `B.shiftL` 6
-                      .|. fi w5_2 `B.shiftL` 1
-                      .|. fi w5_3 `B.shiftR` 4
-                   w8_2 = fi w5_3 `B.shiftL` 4
-                      .|. fi w5_4 `B.shiftR` 1
+               let w8_1 = w5_1 `B.shiftL` 6
+                      .|. w5_2 `B.shiftL` 1
+                      .|. w5_3 `B.shiftR` 4
+                   w8_2 = w5_3 `B.shiftL` 4
+                      .|. w5_4 `B.shiftR` 1
 
                    w16  = fi w8_1
                       .|. fi w8_0 `B.shiftL` 8
 
+               guard (w5_4 `B.shiftL` 7 == 0) -- lowest bit
                pure (BSB.word16LE w16 <> BSB.word8 w8_2)
 
            | l == 7 -> do -- 7 w5's, need 4 w8's
@@ -256,28 +257,29 @@ finalize bs
                w5_4 <- word5 4
                w5_5 <- word5 5
                w5_6 <- word5 6
-               let w8_1, w8_2, w8_3 :: Word8
-                   w8_1 = fi w5_1 `B.shiftL` 6
-                      .|. fi w5_2 `B.shiftL` 1
-                      .|. fi w5_3 `B.shiftR` 4
-                   w8_2 = fi w5_3 `B.shiftL` 4
-                      .|. fi w5_4 `B.shiftR` 1
-                   w8_3 = fi w5_4 `B.shiftL` 7
-                      .|. fi w5_5 `B.shiftL` 2
-                      .|. fi w5_6 `B.shiftR` 3
+               let w8_1 = w5_1 `B.shiftL` 6
+                      .|. w5_2 `B.shiftL` 1
+                      .|. w5_3 `B.shiftR` 4
+                   w8_2 = w5_3 `B.shiftL` 4
+                      .|. w5_4 `B.shiftR` 1
+                   w8_3 = w5_4 `B.shiftL` 7
+                      .|. w5_5 `B.shiftL` 2
+                      .|. w5_6 `B.shiftR` 3
 
                    w32  = fi w8_3
                       .|. fi w8_2 `B.shiftL` 8
                       .|. fi w8_2 `B.shiftL` 16
                       .|. fi w8_1 `B.shiftL` 24
 
+               guard (w5_6 `B.shiftL` 5 == 0) -- lowest 3 bits
                pure (BSB.word32LE w32)
 
            | otherwise -> Nothing
 
   where
     l = BS.length bs
-    word5 i = BS.elemIndex (fi (BU.unsafeIndex bs i)) bech32_charset
+    word5 :: Int -> Maybe Word8
+    word5 i = fmap fi (BS.elemIndex (fi (BU.unsafeIndex bs i)) bech32_charset)
 
 -- assumes length 8 input
 decode_chunk :: BS.ByteString -> Maybe BSB.Builder
