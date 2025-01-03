@@ -1,4 +1,4 @@
-{-# OPTIONS_HADDOCK hide, prune #-}
+{-# OPTIONS_HADDOCK prune #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE LambdaCase #-}
@@ -6,7 +6,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
+-- |
+-- Module: Data.ByteString.Base32
+-- Copyright: (c) 2024 Jared Tobin
+-- License: MIT
+-- Maintainer: Jared Tobin <jared@ppad.tech>
+--
+-- Unpadded base32 encoding & decoding using the bech32 character set.
+
+-- this module is an adaptation of emilypi's 'base32' library
+
 module Data.ByteString.Base32 (
+    -- * base32 encoding and decoding
     encode
   , decode
   ) where
@@ -41,7 +52,6 @@ toStrict = BS.toStrict
 bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
--- adapted from emilypi's 'base32' library
 arrange :: Word32 -> Word8 -> BSB.Builder
 arrange w32 w8 =
   let mask = 0b00011111                                 -- low 5-bit mask
@@ -72,7 +82,11 @@ arrange w32 w8 =
   in  BSB.word64LE w64
 {-# INLINE arrange #-}
 
--- adapted from emilypi's 'base32' library
+-- | Encode a base256-encoded 'ByteString' as a base32-encoded
+--   'ByteString', using the bech32 character set.
+--
+--   >>> encode "jtobin was here!"
+--   "df6x7cnfdcs8wctnyp5x2un9yy"
 encode
   :: BS.ByteString -- ^ base256-encoded bytestring
   -> BS.ByteString -- ^ base32-encoded bytestring
@@ -169,6 +183,13 @@ encode dat = toStrict (go dat) where
         Nothing -> error "impossible, chunk length is 5"
         Just (word32be -> w32, w8) -> arrange w32 w8 <> go etc
 
+-- | Decode a 'ByteString', encoded as base32 using the bech32 character
+--   set, to a base256-encoded 'ByteString'.
+--
+--   >>> decode "df6x7cnfdcs8wctnyp5x2un9yy"
+--   Just "jtobin was here!"
+--   >>> decode "dfOx7cnfdcs8wctnyp5x2un9yy" -- s/6/O (non-bech32 character)
+--   Nothing
 decode
   :: BS.ByteString        -- ^ base32-encoded bytestring
   -> Maybe BS.ByteString  -- ^ base256-encoded bytestring
