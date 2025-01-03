@@ -41,7 +41,7 @@ Haddocks (API documentation, etc.) are hosted at
 
 The aim is best-in-class performance for pure, highly-auditable Haskell
 code. At present we're slightly faster than the official BIP173
-reference implementation.
+reference implementation due to more efficient base32 conversion.
 
 Current benchmark figures on my mid-2020 MacBook Air look like (use
 `cabal bench` to run the benchmark suite):

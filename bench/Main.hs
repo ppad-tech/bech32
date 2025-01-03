@@ -21,34 +21,48 @@ main = defaultMain [
     suite
   ]
 
-base32 :: Benchmark
-base32 = bgroup "base32 encode" [
+base32_encode :: Benchmark
+base32_encode = bgroup "base32 encode" [
     bench "120b" $ nf Base32.encode "jtobin was here"
   , bench "128b (non 40-bit multiple length)" $
       nf Base32.encode "jtobin was here!"
   , bench "240b" $ nf Base32.encode "jtobin was herejtobin was here"
   ]
 
-bech32 :: Benchmark
-bech32 = bgroup "bech32 encode" [
+base32_decode :: Benchmark
+base32_decode = bgroup "base32 decode" [
+    bench "120b" $ nf Base32.decode "df6x7cnfdcs8wctnyp5x2un9"
+  , bench "128b (non 40-bit multiple length)" $
+      nf Base32.decode "df6x7cnfdcs8wctnyp5x2un9yy"
+  ]
+
+bech32_encode :: Benchmark
+bech32_encode = bgroup "bech32 encode" [
     bench "120b" $ nf (Bech32.encode "bc") "jtobin was here"
   , bench "128b (non 40-bit multiple length)" $
       nf (Bech32.encode "bc") "jtobin was here!"
-  , bench "240b" $ nf (Bech32.encode "bc") "jtobin was herejtobin was here"
+  ]
+
+bech32_decode :: Benchmark
+bech32_decode = bgroup "bech32 decode" [
+    bench "120b" $ nf Bech32.decode "bc1df6x7cnfdcs8wctnyp5x2un9f0pw8y"
+  , bench "128b (non 40-bit multiple length)" $
+      nf Bech32.decode "bc1df6x7cnfdcs8wctnyp5x2un9yyg90e5y"
   ]
 
 suite :: Benchmark
-suite = env setup $ \ ~(a, b, c) -> bgroup "benchmarks" [
+suite = env setup $ \ ~(a, b) -> bgroup "benchmarks" [
       bgroup "ppad-bech32" [
-          base32
-        , bech32
+          base32_encode
+        , base32_decode
+        , bech32_encode
+        , bech32_decode
       ]
     , bgroup "reference" [
         bgroup "bech32" [
             bench "120b" $ nf (R.bech32Encode "bc") a
           , bench "128b (non 40-bit multiple length)" $
               nf (R.bech32Encode "bc") b
-          , bench "240b" $ nf (R.bech32Encode "bc") c
         ]
       ]
     ]
@@ -56,5 +70,4 @@ suite = env setup $ \ ~(a, b, c) -> bgroup "benchmarks" [
     setup = do
       let a = R.toBase32 (BS.unpack "jtobin was here")
           b = R.toBase32 (BS.unpack "jtobin was here!")
-          c = R.toBase32 (BS.unpack "jtobin was herejtobin was here")
-      pure (a, b, c)
+      pure (a, b)
