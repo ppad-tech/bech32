@@ -23,7 +23,7 @@ import Control.Monad (guard)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Base32 as B32
-import Data.ByteString.Base32 (Encoding(..))
+import qualified Data.ByteString.Bech32.Internal as BI
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
 import qualified Data.Char as C (toLower)
@@ -35,7 +35,7 @@ toStrict = BS.toStrict
 {-# INLINE toStrict #-}
 
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
-create_checksum = B32.create_checksum Bech32
+create_checksum = BI.create_checksum BI.Bech32
 
 -- | Encode a base256 human-readable part and input as bech32.
 --
@@ -47,13 +47,13 @@ encode
   -> BS.ByteString        -- ^ base256-encoded data part
   -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
 encode hrp (B32.encode -> dat) = do
-  guard (B32.valid_hrp hrp)
-  let check = create_checksum hrp (B32.as_word5 dat)
+  guard (BI.valid_hrp hrp)
+  let check = create_checksum hrp (BI.as_word5 dat)
       res = toStrict $
            BSB.byteString (B8.map C.toLower hrp)
         <> BSB.word8 49 -- 1
         <> BSB.byteString dat
-        <> BSB.byteString (B32.as_base32 check)
+        <> BSB.byteString (BI.as_base32 check)
   guard (BS.length res < 91)
   pure res
 
@@ -66,5 +66,5 @@ encode hrp (B32.encode -> dat) = do
 verify
   :: BS.ByteString -- ^ bech32-encoded bytestring
   -> Bool
-verify = B32.verify Bech32
+verify = BI.verify BI.Bech32
 

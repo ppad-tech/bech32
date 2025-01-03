@@ -25,6 +25,7 @@ library
       -Wall
   exposed-modules:
       Data.ByteString.Base32
+    , Data.ByteString.Bech32.Internal
     , Data.ByteString.Bech32
     , Data.ByteString.Bech32m
   build-depends:
