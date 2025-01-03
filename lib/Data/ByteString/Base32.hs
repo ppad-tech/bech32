@@ -30,10 +30,6 @@ import qualified Data.ByteString.Unsafe as BU
 import qualified Data.Primitive.PrimArray as PA
 import Data.Word (Word8, Word32, Word64)
 
--- XX move to another module
-_BECH32M_CONST :: Word32
-_BECH32M_CONST = 0x2bc830a3
-
 fi :: (Integral a, Num b) => a -> b
 fi = fromIntegral
 {-# INLINE fi #-}
@@ -56,7 +52,7 @@ bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 -- adapted from emilypi's 'base32' library
-arrange :: Word32 -> Word32 -> BSB.Builder
+arrange :: Word32 -> Word8 -> BSB.Builder
 arrange w32 w8 =
   let mask = 0b00011111                                 -- low 5-bit mask
       bech32_char = fi . BS.index bech32_charset . fi   -- word5 -> bech32
@@ -69,9 +65,9 @@ arrange w32 w8 =
       w5_4 = mask .&. (w32 `B.shiftR` 07)
       w5_5 = mask .&. (w32 `B.shiftR` 02)
       -- combine lowest 2 bits of w32 with highest 3 bits of w8
-      w5_6 = mask .&. (w32 `B.shiftL` 03 .|. w8 `B.shiftR` 05)
+      w5_6 = mask .&. (w32 `B.shiftL` 03 .|. fi w8 `B.shiftR` 05)
       -- lowest 5 bits of w8
-      w5_7 = mask .&. w8
+      w5_7 = mask .&. fi w8
 
       -- get (w8) bech32 char for each w5, pack all into little-endian w64
       !w64 = bech32_char w5_0
@@ -179,7 +175,7 @@ encode dat = toStrict (go dat) where
 
       _ -> case BS.unsnoc chunk of
         Nothing -> error "impossible, chunk length is 5"
-        Just (word32be -> w32, fi -> w8) -> arrange w32 w8 <> go etc
+        Just (word32be -> w32, w8) -> arrange w32 w8 <> go etc
 
 decode
   :: BS.ByteString        -- ^ base32-encoded bytestring
@@ -299,6 +295,9 @@ decode_chunk bs = do
   pure $ BSB.word32BE w32 <> BSB.word8 w8
 
 -- XX move all of the below to another module
+
+_BECH32M_CONST :: Word32
+_BECH32M_CONST = 0x2bc830a3
 
 -- naive base32 -> word5
 as_word5 :: BS.ByteString -> BS.ByteString
