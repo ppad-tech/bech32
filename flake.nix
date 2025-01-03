@@ -1,5 +1,5 @@
 {
-  description = "Pure Haskell bech32m/bech32 encodings.";
+  description = "Pure Haskell bech32m and bech32 encoding/decoding.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

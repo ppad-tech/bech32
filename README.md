@@ -1,6 +1,6 @@
 # ppad-bech32
 
-A pure Haskell implementation of the bech32m and bech32 encodings on
+A pure Haskell implementation of bech32m and bech32 encoding/decoding on
 strict ByteStrings, as specified by [BIP350][bi350] and [BIP173][bi173].
 
 ## Usage
@@ -26,6 +26,10 @@ A sample GHCi session:
   > -- tweaked stuff will obviously fail to verify (s/m/w below)
   > Bech32m.verify "bc1vys8xarpdejxzunyypwk7uny8qsxy7t5v4ehgunfdenswyuz0e"
   False
+  >
+  > -- decode bech32m-encoded input
+  > Bech32m.decode bech32m
+  Just ("bc","a standard word8 bytestring")
 ```
 
 ## Documentation

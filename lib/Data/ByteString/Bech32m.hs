@@ -9,11 +9,13 @@
 --
 -- The
 -- [BIP350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki)
--- bech32m checksummed base32 encoding, with checksum verification.
+-- bech32m checksummed base32 encoding, with decoding and checksum
+-- verification.
 
 module Data.ByteString.Bech32m (
-    -- * Encoding
+    -- * Encoding and Decoding
     encode
+  , decode
 
     -- * Checksum
   , verify
@@ -26,6 +28,7 @@ import qualified Data.ByteString.Base32 as B32
 import qualified Data.ByteString.Bech32.Internal as BI
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
+import qualified Data.ByteString.Internal as BSI
 import qualified Data.Char as C (toLower)
 
 -- realization for small builders
@@ -56,6 +59,28 @@ encode hrp (B32.encode -> dat) = do
         <> BSB.byteString (BI.as_base32 check)
   guard (BS.length res < 91)
   pure res
+
+-- | Decode a bech32m-encoded 'ByteString' into its human-readable and data
+--   parts.
+--
+--   >>> decode "hi1df6x7cnfdcs8wctnyp5x2un9m9ac4f"
+--   Just ("hi","jtobin was here")
+--   >>> decode "hey1df6x7cnfdcs8wctnyp5x2un9m9ac4f" -- s/hi/hey
+--   Nothing
+decode
+  :: BS.ByteString                        -- ^ bech23-encoded bytestring
+  -> Maybe (BS.ByteString, BS.ByteString)
+decode bs@(BSI.PS _ _ l) = do
+  guard (l <= 90)
+  guard (verify bs)
+  sep <- BS.elemIndexEnd 0x31 bs
+  case BS.splitAt sep bs of
+    (hrp, raw) -> do
+      guard (BI.valid_hrp hrp)
+      guard (BS.length raw >= 6)
+      (_, BS.dropEnd 6 -> bech32dat) <- BS.uncons raw
+      dat <- B32.decode bech32dat
+      pure (hrp, dat)
 
 -- | Verify that a bech32m string has a valid checksum.
 --

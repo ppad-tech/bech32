@@ -1,7 +1,7 @@
 cabal-version:      3.0
 name:               ppad-bech32
 version:            0.1.2
-synopsis:           The bech32 and bech32m encodings, per BIPs 173 & 350.
+synopsis:           bech32 and bech32m encoding/decoding, per BIPs 173 & 350.
 license:            MIT
 license-file:       LICENSE
 author:             Jared Tobin
@@ -11,8 +11,8 @@ build-type:         Simple
 tested-with:        GHC == 9.8.1
 extra-doc-files:    CHANGELOG
 description:
-  The bech32 and bech32m encodings on strict bytestrings, per BIPs 173 &
-  350.
+  bech32 and bech32m encoding/decoding on strict bytestrings, per BIPs
+  173 & 350.
 
 source-repository head
   type:     git
