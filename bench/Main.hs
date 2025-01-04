@@ -47,7 +47,7 @@ bech32_decode = bgroup "bech32 decode" [
   ]
 
 suite :: Benchmark
-suite = env setup $ \ ~(a, b) -> bgroup "benchmarks" [
+suite = bgroup "benchmarks" [
       bgroup "ppad-bech32" [
           base32_encode
         , base32_decode
@@ -56,14 +56,12 @@ suite = env setup $ \ ~(a, b) -> bgroup "benchmarks" [
       ]
     , bgroup "reference" [
         bgroup "bech32" [
-            bench "120b" $ nf (R.bech32Encode "bc") a
+            bench "120b" $ nf (refEncode "bc") "jtobin was here"
           , bench "128b (non 40-bit multiple length)" $
-              nf (R.bech32Encode "bc") b
+              nf (refEncode "bc") "jtobin was here!"
         ]
       ]
     ]
   where
-    setup = do
-      let a = R.toBase32 (BS.unpack "jtobin was here")
-          b = R.toBase32 (BS.unpack "jtobin was here!")
-      pure (a, b)
+    refEncode h a = R.bech32Encode h (R.toBase32 (BS.unpack a))
+
