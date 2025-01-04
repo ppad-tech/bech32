@@ -1,5 +1,11 @@
 # Changelog
 
+- 0.2.0 (2025-01-04)
+  * Adds bech32/bech32m/base32 decoding.
+  * Fixes a bug in which mixed-case HRP's would result in encodings with
+    invalid checksums (IIRC this also affects the Haskell reference
+    implementation).
+
 - 0.1.2 (2024-12-15)
   * Minor performance improvements.
 
