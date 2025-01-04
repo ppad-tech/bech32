@@ -190,11 +190,7 @@ encode dat = toStrict (go dat) where
 decode
   :: BS.ByteString        -- ^ base32-encoded bytestring
   -> Maybe BS.ByteString  -- ^ base256-encoded bytestring
-decode = handle . go mempty where
-  handle = \case
-    Nothing -> Nothing
-    Just s -> Just (toStrict s)
-
+decode = fmap toStrict . go mempty where
   go acc bs@(BI.PS _ _ l)
     | l < 8 = do
         fin <- finalize bs
