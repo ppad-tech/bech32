@@ -48,11 +48,11 @@ encode
   :: BS.ByteString        -- ^ base256-encoded human-readable part
   -> BS.ByteString        -- ^ base256-encoded data part
   -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
-encode hrp (B32.encode -> dat) = do
+encode (B8.map C.toLower -> hrp) (B32.encode -> dat) = do
   guard (BI.valid_hrp hrp)
   let check = create_checksum hrp (BI.as_word5 dat)
       res = toStrict $
-           BSB.byteString (B8.map C.toLower hrp)
+           BSB.byteString hrp
         <> BSB.word8 49 -- 1
         <> BSB.byteString dat
         <> BSB.byteString (BI.as_base32 check)
