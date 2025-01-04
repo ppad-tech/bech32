@@ -55,10 +55,8 @@ suite = bgroup "benchmarks" [
         , bech32_decode
       ]
     , bgroup "reference" [
-        bgroup "bech32" [
-            bench "120b" $ nf (refEncode "bc") "jtobin was here"
-          , bench "128b (non 40-bit multiple length)" $
-              nf (refEncode "bc") "jtobin was here!"
+        bgroup "bech32 encode" [
+          bench "120b" $ nf (refEncode "bc") "jtobin was here"
         ]
       ]
     ]
