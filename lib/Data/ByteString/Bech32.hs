@@ -68,7 +68,7 @@ encode hrp (B32.encode -> dat) = do
 --   Nothing
 decode
   :: BS.ByteString                        -- ^ bech23-encoded bytestring
-  -> Maybe (BS.ByteString, BS.ByteString)
+  -> Maybe (BS.ByteString, BS.ByteString) -- ^ (hrp, data less checksum)
 decode bs@(BSI.PS _ _ l) = do
   guard (l <= 90)
   guard (verify bs)
