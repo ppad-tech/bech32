@@ -28,7 +28,7 @@ import qualified Data.ByteString.Bech32.Internal as BI
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
 import qualified Data.ByteString.Internal as BSI
-import qualified Data.Char as C (toLower)
+import qualified Data.Char as C (toLower, isLower, isAlpha)
 
 -- realization for small builders
 toStrict :: BSB.Builder -> BS.ByteString
@@ -71,6 +71,7 @@ decode
   -> Maybe (BS.ByteString, BS.ByteString) -- ^ (hrp, data less checksum)
 decode bs@(BSI.PS _ _ l) = do
   guard (l <= 90)
+  guard (B8.all (\a -> if C.isAlpha a then C.isLower a else True) bs)
   guard (verify bs)
   sep <- BS.elemIndexEnd 0x31 bs
   case BS.splitAt sep bs of
