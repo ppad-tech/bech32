@@ -16,6 +16,9 @@ newtype BS = BS BS.ByteString
 data ValidInput = ValidInput BS.ByteString BS.ByteString
   deriving (Eq, Show)
 
+data InvalidInput = InvalidInput BS.ByteString BS.ByteString
+  deriving (Eq, Show)
+
 instance Q.Arbitrary ValidInput where
   arbitrary = do
     h <- hrp
@@ -23,6 +26,14 @@ instance Q.Arbitrary ValidInput where
         a = l * 5 `quot` 8
     b <- bytes a
     pure (ValidInput h b)
+
+instance Q.Arbitrary InvalidInput where
+  arbitrary = do
+    h <- invalid_hrp
+    let l = 83 - BS.length h
+        a = l * 5 `quot` 8
+    b <- bytes a
+    pure (InvalidInput h b)
 
 instance Q.Arbitrary BS where
   arbitrary = do
@@ -33,6 +44,12 @@ hrp :: Q.Gen BS.ByteString
 hrp = do
   l <- Q.chooseInt (1, 83)
   v <- Q.vectorOf l (Q.choose (33, 126))
+  pure (B8.map C.toLower (BS.pack v))
+
+invalid_hrp :: Q.Gen BS.ByteString
+invalid_hrp = do
+  l <- Q.oneof [pure 0, Q.chooseInt (84, 100)]
+  v <- Q.vectorOf l (Q.oneof [Q.choose (0, 32), Q.choose (127, 255)])
   pure (B8.map C.toLower (BS.pack v))
 
 bytes :: Int -> Q.Gen BS.ByteString
@@ -66,6 +83,18 @@ base32_decode_inverts_encode (BS bs) = case B32.decode (B32.encode bs) of
   Nothing -> False
   Just b  -> b == bs
 
+bech32_invalid_input_fails_encode :: InvalidInput -> Bool
+bech32_invalid_input_fails_encode (InvalidInput h b) =
+  case Bech32.encode h b of
+    Nothing -> True
+    Just _ -> False
+
+bech32m_invalid_input_fails_encode :: InvalidInput -> Bool
+bech32m_invalid_input_fails_encode (InvalidInput h b) =
+  case Bech32m.encode h b of
+    Nothing -> True
+    Just _ -> False
+
 main :: IO ()
 main = defaultMain $ testGroup "ppad-bech32" [
     testGroup "base32" [
@@ -77,10 +106,14 @@ main = defaultMain $ testGroup "ppad-bech32" [
         Q.withMaxSuccess 1000 matches_reference
     , Q.testProperty "decode . encode ~ id" $
         Q.withMaxSuccess 1000 bech32_decode_inverts_encode
+    , Q.testProperty "invalid bech32 input fails to encode" $
+        Q.withMaxSuccess 1000 bech32_invalid_input_fails_encode
     ]
   , testGroup "bech32m" [
       Q.testProperty "decode . encode ~ id" $
         Q.withMaxSuccess 1000 bech32m_decode_inverts_encode
+    , Q.testProperty "invalid bech32m input fails to encode" $
+        Q.withMaxSuccess 1000 bech32_invalid_input_fails_encode
     ]
   ]
 
