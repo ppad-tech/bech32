@@ -1,5 +1,8 @@
 # Changelog
 
+- 0.2.1 (2025-01-07)
+  * Removes the 'primitive' dependency.
+
 - 0.2.0 (2025-01-04)
   * Adds bech32/bech32m/base32 decoding.
   * Fixes a bug in which mixed-case HRP's would result in encodings with

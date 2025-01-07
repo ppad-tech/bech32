@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               ppad-bech32
-version:            0.2.0
+version:            0.2.1
 synopsis:           bech32 and bech32m encoding/decoding, per BIPs 173 & 350.
 license:            MIT
 license-file:       LICENSE
