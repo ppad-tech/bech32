@@ -31,7 +31,6 @@ library
   build-depends:
       base >= 4.9 && < 5
     , bytestring >= 0.9 && < 0.13
-    , primitive >= 0.8 && < 0.10
 
 test-suite bech32-tests
   type:                exitcode-stdio-1.0

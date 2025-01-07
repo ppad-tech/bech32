@@ -1,6 +1,7 @@
 {-# OPTIONS_HADDOCK hide, prune #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE BinaryLiterals #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -20,7 +21,6 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
 import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
-import qualified Data.Primitive.PrimArray as PA
 import Data.Word (Word32)
 
 fi :: (Integral a, Num b) => a -> b
@@ -52,8 +52,14 @@ as_base32 = BS.map (BS.index bech32_charset . fi)
 
 polymod :: BS.ByteString -> Word32
 polymod = BS.foldl' alg 1 where
-  generator = PA.primArrayFromListN 5
-    [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
+  generator :: Int -> Word32
+  generator = \case
+    0 -> 0x3b6a57b2
+    1 -> 0x26508e6d
+    2 -> 0x1ea119fa
+    3 -> 0x3d4233dd
+    4 -> 0x2a1462b3
+    _ -> error "ppad-bech32: internal error (please report this as a bug!)"
 
   alg !chk v =
     let !b = chk `B.shiftR` 25
@@ -63,8 +69,7 @@ polymod = BS.foldl' alg 1 where
   loop_gen i b !chk
     | i > 4 = chk
     | otherwise =
-        let sor | B.testBit (b `B.shiftR` i) 0 =
-                    PA.indexPrimArray generator i
+        let sor | B.testBit (b `B.shiftR` i) 0 = generator i
                 | otherwise = 0
         in  loop_gen (succ i) b (chk `B.xor` sor)
 
