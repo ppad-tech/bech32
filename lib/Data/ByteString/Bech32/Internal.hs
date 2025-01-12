@@ -48,7 +48,7 @@ as_word5 = BS.map f where
 
 -- naive word5 -> base32
 as_base32 :: BS.ByteString -> BS.ByteString
-as_base32 = BS.map (BS.index bech32_charset . fi)
+as_base32 = BS.map (BU.unsafeIndex bech32_charset . fi)
 
 polymod :: BS.ByteString -> Word32
 polymod = BS.foldl' alg 1 where
