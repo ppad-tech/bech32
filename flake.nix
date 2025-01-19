@@ -2,11 +2,16 @@
   description = "Pure Haskell bech32m and bech32 encoding/decoding.";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    ppad-nixpkgs = {
+      type = "git";
+      url  = "git://git.ppad.tech/nixpkgs.git";
+      ref  = "master";
+    };
+    flake-utils.follows = "ppad-nixpkgs/flake-utils";
+    nixpkgs.follows = "ppad-nixpkgs/nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, ppad-nixpkgs }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         lib = "ppad-bech32";
