@@ -1,4 +1,4 @@
-# ppad-bech32
+# bech32
 
 [![](https://img.shields.io/hackage/v/ppad-bech32?color=blue)](https://hackage.haskell.org/package/ppad-bech32)
 ![](https://img.shields.io/badge/license-MIT-brightgreen)
