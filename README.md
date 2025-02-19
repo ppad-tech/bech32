@@ -3,6 +3,9 @@
 A pure Haskell implementation of bech32m and bech32 encoding/decoding on
 strict ByteStrings, as specified by [BIP350][bi350] and [BIP173][bi173].
 
+[![](https://img.shields.io/hackage/v/ppad-bech32?color=blue)](https://hackage.haskell.org/package/ppad-bech32)
+![](https://img.shields.io/badge/license-MIT-brightgreen)
+
 ## Usage
 
 A sample GHCi session:
