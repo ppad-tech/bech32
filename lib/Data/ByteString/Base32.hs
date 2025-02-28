@@ -54,7 +54,41 @@ bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 word5 :: Word8 -> Maybe Word8
-word5 w8 = fmap fi (BS.elemIndex w8 bech32_charset)
+word5 = \case
+  113 -> pure $! 0
+  112 -> pure $! 1
+  122 -> pure $! 2
+  114 -> pure $! 3
+  121 -> pure $! 4
+  57  -> pure $! 5
+  120 -> pure $! 6
+  56  -> pure $! 7
+  103 -> pure $! 8
+  102 -> pure $! 9
+  50  -> pure $! 10
+  116 -> pure $! 11
+  118 -> pure $! 12
+  100 -> pure $! 13
+  119 -> pure $! 14
+  48  -> pure $! 15
+  115 -> pure $! 16
+  51  -> pure $! 17
+  106 -> pure $! 18
+  110 -> pure $! 19
+  53  -> pure $! 20
+  52  -> pure $! 21
+  107 -> pure $! 22
+  104 -> pure $! 23
+  99  -> pure $! 24
+  101 -> pure $! 25
+  54  -> pure $! 26
+  109 -> pure $! 27
+  117 -> pure $! 28
+  97  -> pure $! 29
+  55  -> pure $! 30
+  108 -> pure $! 31
+  _   -> Nothing
+{-# INLINE word5 #-}
 
 arrange :: Word32 -> Word8 -> BSB.Builder
 arrange w32 w8 =
