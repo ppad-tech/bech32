@@ -46,27 +46,30 @@ The aim is best-in-class performance for pure, highly-auditable Haskell
 code. At present we're a little over twice as fast as the official
 BIP173 reference implementation.
 
-Current benchmark figures on my mid-2020 MacBook Air look like (use
+Current benchmark figures on a relatively-beefy NixOS VPS look like (use
 `cabal bench` to run the benchmark suite):
 
 ```
   benchmarking benchmarks/ppad-bech32/bech32 encode/120b
-  time                 1.278 μs   (1.264 μs .. 1.293 μs)
+  time                 1.126 μs   (1.115 μs .. 1.136 μs)
                        0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 1.271 μs   (1.261 μs .. 1.283 μs)
-  std dev              37.83 ns   (31.42 ns .. 45.63 ns)
+  mean                 1.132 μs   (1.125 μs .. 1.140 μs)
+  std dev              26.29 ns   (21.47 ns .. 31.93 ns)
+  variance introduced by outliers: 29% (moderately inflated)
 
   benchmarking benchmarks/ppad-bech32/bech32 decode/120b
-  time                 1.567 μs   (1.519 μs .. 1.611 μs)
-                       0.996 R²   (0.994 R² .. 0.998 R²)
-  mean                 1.535 μs   (1.511 μs .. 1.565 μs)
-  std dev              88.19 ns   (71.27 ns .. 108.7 ns)
+  time                 1.293 μs   (1.281 μs .. 1.308 μs)
+                       0.999 R²   (0.999 R² .. 1.000 R²)
+  mean                 1.280 μs   (1.274 μs .. 1.290 μs)
+  std dev              24.47 ns   (18.39 ns .. 33.71 ns)
+  variance introduced by outliers: 21% (moderately inflated)
 
   benchmarking benchmarks/reference/bech32 encode/120b
-  time                 2.953 μs   (2.785 μs .. 3.143 μs)
-                       0.975 R²   (0.958 R² .. 0.991 R²)
-  mean                 2.817 μs   (2.723 μs .. 2.998 μs)
-  std dev              415.9 ns   (287.2 ns .. 640.3 ns)
+  time                 2.897 μs   (2.865 μs .. 2.920 μs)
+                       0.999 R²   (0.999 R² .. 1.000 R²)
+  mean                 2.828 μs   (2.806 μs .. 2.856 μs)
+  std dev              81.33 ns   (70.94 ns .. 97.46 ns)
+  variance introduced by outliers: 36% (moderately inflated)
 ```
 
 ## Security
