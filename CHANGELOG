@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.2.2 (2025-02-28)
+  * Various optimizations, including roughly 2x faster decoding
+    performance.
+
 - 0.2.1 (2025-01-07)
   * Removes the 'primitive' dependency.
 
