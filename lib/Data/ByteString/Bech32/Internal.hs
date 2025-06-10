@@ -21,7 +21,7 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Builder.Extra as BE
 import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
-import Data.Word (Word32)
+import Data.Word (Word8, Word32)
 
 fi :: (Integral a, Num b) => a -> b
 fi = fromIntegral
@@ -39,14 +39,51 @@ _BECH32M_CONST = 0x2bc830a3
 bech32_charset :: BS.ByteString
 bech32_charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
--- naive base32 -> word5
+word5 :: Word8 -> Maybe Word8
+word5 = \case
+  113 -> pure $! 00 -- 'q'
+  112 -> pure $! 01 -- 'p'
+  122 -> pure $! 02 -- 'z'
+  114 -> pure $! 03 -- 'r'
+  121 -> pure $! 04 -- 'y'
+  57  -> pure $! 05 -- '9'
+  120 -> pure $! 06 -- 'x'
+  56  -> pure $! 07 -- '8'
+  103 -> pure $! 08 -- 'g'
+  102 -> pure $! 09 -- 'f'
+  50  -> pure $! 10 -- '2'
+  116 -> pure $! 11 -- 't'
+  118 -> pure $! 12 -- 'v'
+  100 -> pure $! 13 -- 'd'
+  119 -> pure $! 14 -- 'w'
+  48  -> pure $! 15 -- '0'
+  115 -> pure $! 16 -- 's'
+  51  -> pure $! 17 -- '3'
+  106 -> pure $! 18 -- 'j'
+  110 -> pure $! 19 -- 'n'
+  53  -> pure $! 20 -- '5'
+  52  -> pure $! 21 -- '4'
+  107 -> pure $! 22 -- 'k'
+  104 -> pure $! 23 -- 'h'
+  99  -> pure $! 24 -- 'c'
+  101 -> pure $! 25 -- 'e'
+  54  -> pure $! 26 -- '6'
+  109 -> pure $! 27 -- 'm'
+  117 -> pure $! 28 -- 'u'
+  97  -> pure $! 29 -- 'a'
+  55  -> pure $! 30 -- '7'
+  108 -> pure $! 31 -- 'l'
+  _   -> Nothing
+{-# INLINE word5 #-}
+
+-- base32 -> word5
 as_word5 :: BS.ByteString -> BS.ByteString
 as_word5 = BS.map f where
-  f b = case BS.elemIndex (fi b) bech32_charset of
+  f b = case word5 (fi b) of
     Nothing -> error "ppad-bech32 (as_word5): input not bech32-encoded"
     Just w -> fi w
 
--- naive word5 -> base32
+-- word5 -> base32
 as_base32 :: BS.ByteString -> BS.ByteString
 as_base32 = BS.map (BU.unsafeIndex bech32_charset . fi)
 
