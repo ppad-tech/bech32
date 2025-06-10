@@ -51,7 +51,8 @@ encode
   -> Maybe BS.ByteString  -- ^ bech32m-encoded bytestring
 encode (B8.map C.toLower -> hrp) (B32.encode -> dat) = do
   guard (BI.valid_hrp hrp)
-  let check = create_checksum hrp (BI.as_word5 dat)
+  ws <- BI.as_word5 dat
+  let check = create_checksum hrp ws
       res = toStrict $
            BSB.byteString hrp
         <> BSB.word8 49 -- 1

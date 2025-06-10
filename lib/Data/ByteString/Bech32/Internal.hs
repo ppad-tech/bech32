@@ -77,11 +77,13 @@ word5 = \case
 {-# INLINE word5 #-}
 
 -- base32 -> word5
-as_word5 :: BS.ByteString -> BS.ByteString
-as_word5 = BS.map f where
-  f b = case word5 (fi b) of
-    Nothing -> error "ppad-bech32 (as_word5): input not bech32-encoded"
-    Just w -> fi w
+as_word5 :: BS.ByteString -> Maybe BS.ByteString
+as_word5 = go mempty where
+  go acc bs = case BS.uncons bs of
+    Nothing -> pure (toStrict acc)
+    Just (h, t) -> do
+      w5 <- word5 (fi h)
+      go (acc <> BSB.word8 w5) t
 
 -- word5 -> base32
 as_base32 :: BS.ByteString -> BS.ByteString
@@ -144,8 +146,12 @@ verify enc b32 = case BS.elemIndexEnd 0x31 b32 of
   Nothing  -> False
   Just idx ->
     let (hrp, BU.unsafeDrop 1 -> dat) = BS.splitAt idx b32
-        bs = hrp_expand hrp <> as_word5 dat
-    in  polymod bs == case enc of
-          Bech32 -> 1
-          Bech32m -> _BECH32M_CONST
+        w5s = as_word5 dat
+    in  case w5s of
+          Nothing -> False
+          Just ws ->
+            let bs = hrp_expand hrp <> ws
+            in  polymod bs == case enc of
+                  Bech32 -> 1
+                  Bech32m -> _BECH32M_CONST
 
