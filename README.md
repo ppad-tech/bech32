@@ -47,30 +47,27 @@ The aim is best-in-class performance for pure, highly-auditable Haskell
 code. At present we're a little over twice as fast as the official
 BIP173 reference implementation.
 
-Current benchmark figures on a relatively-beefy NixOS VPS look like (use
+Current benchmark figures on a M4 Silicon MacBook Air look like (use
 `cabal bench` to run the benchmark suite):
 
 ```
   benchmarking benchmarks/ppad-bech32/bech32 encode/120b
-  time                 1.126 μs   (1.115 μs .. 1.136 μs)
-                       0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 1.132 μs   (1.125 μs .. 1.140 μs)
-  std dev              26.29 ns   (21.47 ns .. 31.93 ns)
-  variance introduced by outliers: 29% (moderately inflated)
+  time                 783.5 ns   (781.4 ns .. 786.6 ns)
+                       1.000 R²   (1.000 R² .. 1.000 R²)
+  mean                 791.1 ns   (788.7 ns .. 793.5 ns)
+  std dev              8.193 ns   (7.461 ns .. 8.973 ns)
 
   benchmarking benchmarks/ppad-bech32/bech32 decode/120b
-  time                 1.293 μs   (1.281 μs .. 1.308 μs)
-                       0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 1.280 μs   (1.274 μs .. 1.290 μs)
-  std dev              24.47 ns   (18.39 ns .. 33.71 ns)
-  variance introduced by outliers: 21% (moderately inflated)
+  time                 944.0 ns   (943.1 ns .. 944.7 ns)
+                       1.000 R²   (1.000 R² .. 1.000 R²)
+  mean                 942.4 ns   (941.7 ns .. 943.1 ns)
+  std dev              2.197 ns   (1.838 ns .. 2.669 ns)
 
   benchmarking benchmarks/reference/bech32 encode/120b
-  time                 2.897 μs   (2.865 μs .. 2.920 μs)
-                       0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 2.828 μs   (2.806 μs .. 2.856 μs)
-  std dev              81.33 ns   (70.94 ns .. 97.46 ns)
-  variance introduced by outliers: 36% (moderately inflated)
+  time                 1.282 μs   (1.281 μs .. 1.283 μs)
+                       1.000 R²   (1.000 R² .. 1.000 R²)
+  mean                 1.282 μs   (1.282 μs .. 1.283 μs)
+  std dev              1.338 ns   (996.0 ps .. 1.881 ns)
 ```
 
 ## Security
