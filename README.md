@@ -43,32 +43,27 @@ Haddocks (API documentation, etc.) are hosted at
 
 ## Performance
 
-The aim is best-in-class performance for pure, highly-auditable Haskell
-code. At present we're a little over twice as fast as the official
-BIP173 reference implementation.
+The aim is best-in-class performance for pure Haskell code.
 
 Current benchmark figures on a M4 Silicon MacBook Air look like (use
 `cabal bench` to run the benchmark suite):
 
 ```
   benchmarking benchmarks/ppad-bech32/bech32 encode/120b
-  time                 783.5 ns   (781.4 ns .. 786.6 ns)
+  time                 462.7 ns   (460.8 ns .. 465.5 ns)
                        1.000 R²   (1.000 R² .. 1.000 R²)
-  mean                 791.1 ns   (788.7 ns .. 793.5 ns)
-  std dev              8.193 ns   (7.461 ns .. 8.973 ns)
+  mean                 465.5 ns   (464.3 ns .. 466.6 ns)
+  std dev              3.955 ns   (3.485 ns .. 4.602 ns)
 
   benchmarking benchmarks/ppad-bech32/bech32 decode/120b
-  time                 944.0 ns   (943.1 ns .. 944.7 ns)
+  time                 499.4 ns   (497.5 ns .. 502.3 ns)
                        1.000 R²   (1.000 R² .. 1.000 R²)
-  mean                 942.4 ns   (941.7 ns .. 943.1 ns)
-  std dev              2.197 ns   (1.838 ns .. 2.669 ns)
-
-  benchmarking benchmarks/reference/bech32 encode/120b
-  time                 1.282 μs   (1.281 μs .. 1.283 μs)
-                       1.000 R²   (1.000 R² .. 1.000 R²)
-  mean                 1.282 μs   (1.282 μs .. 1.283 μs)
-  std dev              1.338 ns   (996.0 ps .. 1.881 ns)
+  mean                 508.0 ns   (505.2 ns .. 510.8 ns)
+  std dev              9.101 ns   (7.828 ns .. 11.23 ns)
+  variance introduced by outliers: 21% (moderately inflated)
 ```
+
+You should compile with the 'llvm' flag for maximum performance.
 
 ## Security
 
