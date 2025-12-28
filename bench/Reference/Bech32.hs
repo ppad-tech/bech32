@@ -20,7 +20,6 @@ import Data.Bits (Bits, unsafeShiftL, unsafeShiftR, (.&.), (.|.), xor, testBit)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (toLower, toUpper)
-import Data.Foldable (foldl')
 import Data.Functor.Identity (Identity, runIdentity)
 import Data.Ix (Ix(..))
 import Data.Word (Word8)
