@@ -25,16 +25,8 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Base32 as B32
 import qualified Data.ByteString.Bech32.Internal as BI
-import qualified Data.ByteString.Builder as BSB
-import qualified Data.ByteString.Builder.Extra as BE
 import qualified Data.ByteString.Internal as BSI
 import qualified Data.Char as C (toLower, isLower, isAlpha)
-
--- realization for small builders
-toStrict :: BSB.Builder -> BS.ByteString
-toStrict = BS.toStrict
-  . BE.toLazyByteStringWith (BE.safeStrategy 128 BE.smallChunkSize) mempty
-{-# INLINE toStrict #-}
 
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
 create_checksum = BI.create_checksum BI.Bech32
@@ -52,11 +44,7 @@ encode (B8.map C.toLower -> hrp) (B32.encode -> dat) = do
   guard (BI.valid_hrp hrp)
   ws <- BI.as_word5 dat
   let check = create_checksum hrp ws
-      res = toStrict $
-           BSB.byteString hrp
-        <> BSB.word8 49 -- 1
-        <> BSB.byteString dat
-        <> BSB.byteString (BI.as_base32 check)
+      res = BS.concat [hrp, BS.singleton 49, dat, BI.as_base32 check]
   guard (BS.length res < 91)
   pure res
 
