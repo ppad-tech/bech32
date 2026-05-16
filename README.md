@@ -49,19 +49,19 @@ Current benchmark figures on a M4 Silicon MacBook Air look like (use
 `cabal bench` to run the benchmark suite):
 
 ```
-  benchmarking benchmarks/ppad-bech32/bech32 decode/120b
-  time                 501.7 ns   (497.7 ns .. 505.6 ns)
+  benchmarking benchmarks/ppad-bech32/bech32 encode/120b
+  time                 240.8 ns   (238.1 ns .. 243.3 ns)
                        0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 494.4 ns   (491.6 ns .. 498.0 ns)
-  std dev              10.81 ns   (8.895 ns .. 12.98 ns)
-  variance introduced by outliers: 28% (moderately inflated)
+  mean                 240.3 ns   (238.7 ns .. 242.4 ns)
+  std dev              6.035 ns   (5.059 ns .. 7.607 ns)
+  variance introduced by outliers: 36% (moderately inflated)
 
   benchmarking benchmarks/ppad-bech32/bech32 decode/120b
-  time                 501.7 ns   (497.7 ns .. 505.6 ns)
+  time                 257.5 ns   (256.0 ns .. 259.7 ns)
                        0.999 R²   (0.999 R² .. 1.000 R²)
-  mean                 494.4 ns   (491.6 ns .. 498.0 ns)
-  std dev              10.81 ns   (8.895 ns .. 12.98 ns)
-  variance introduced by outliers: 28% (moderately inflated)
+  mean                 262.3 ns   (260.5 ns .. 264.5 ns)
+  std dev              6.611 ns   (5.482 ns .. 8.776 ns)
+  variance introduced by outliers: 36% (moderately inflated)
 ```
 
 You should compile with the 'llvm' flag for maximum performance.
