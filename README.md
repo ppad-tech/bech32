@@ -4,7 +4,7 @@
 ![](https://img.shields.io/badge/license-MIT-brightgreen)
 [![](https://img.shields.io/badge/haddock-bech32-lightblue)](https://docs.ppad.tech/bech32)
 
-A pure Haskell implementation of bech32m and bech32 encoding/decoding on
+A fast Haskell implementation of bech32m and bech32 encoding/decoding on
 strict ByteStrings, as specified by [BIP350][bi350] and [BIP173][bi173].
 
 ## Usage
@@ -43,7 +43,7 @@ Haddocks (API documentation, etc.) are hosted at
 
 ## Performance
 
-The aim is best-in-class performance for pure Haskell code.
+The aim is best-in-class performance.
 
 Current benchmark figures on a M4 Silicon MacBook Air look like (use
 `cabal bench` to run the benchmark suite):
@@ -91,11 +91,6 @@ $ cabal repl ppad-bech32
 ```
 
 to get a REPL for the main library.
-
-## Attribution
-
-The base32 implementation used internally is more or less a pure
-translation of the [base32][bas32] package on Hackage.
 
 [nixos]: https://nixos.org/
 [flake]: https://nixos.org/manual/nix/unstable/command-ref/new-cli/nix3-flake.html
