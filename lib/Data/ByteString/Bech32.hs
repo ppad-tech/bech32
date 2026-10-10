@@ -1,5 +1,4 @@
 {-# OPTIONS_HADDOCK prune #-}
-{-# LANGUAGE ViewPatterns #-}
 
 -- |
 -- Module: Data.ByteString.Bech32
@@ -20,15 +19,8 @@ module Data.ByteString.Bech32 (
   , verify
   ) where
 
-import Control.Monad (guard)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.ByteString.Base32 as B32
 import qualified Data.ByteString.Bech32.Internal as BI
-import qualified Data.Char as C (toLower)
-
-create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
-create_checksum = BI.create_checksum BI.Bech32
 
 -- | Encode a base256 human-readable part and input as bech32.
 --
@@ -39,13 +31,7 @@ encode
   :: BS.ByteString        -- ^ base256-encoded human-readable part
   -> BS.ByteString        -- ^ base256-encoded data part
   -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
-encode (B8.map C.toLower -> hrp) (B32.encode -> dat) = do
-  guard (BI.valid_hrp hrp)
-  ws <- BI.as_word5 dat
-  let check = create_checksum hrp ws
-      res = BS.concat [hrp, BS.singleton 49, dat, BI.as_base32 check]
-  guard (BS.length res < 91)
-  pure res
+encode = BI.encode BI.Bech32
 
 -- | Decode a bech32-encoded 'ByteString' into its human-readable and data
 --   parts.

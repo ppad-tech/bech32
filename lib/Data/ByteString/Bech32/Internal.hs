@@ -9,6 +9,7 @@ module Data.ByteString.Bech32.Internal (
   , create_checksum
   , verify
   , valid_hrp
+  , encode
   , decode
   ) where
 
@@ -17,7 +18,8 @@ import Data.Bits ((.&.), (.|.))
 import qualified Data.Bits as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base32 as B32
-import Data.ByteString.Base32.Internal (enc_tab, dec_tab)
+import Data.ByteString.Base32.Internal
+  (enc_tab, dec_tab, w5_tab, encode_with)
 import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
 import Data.Word (Word8, Word32)
@@ -187,6 +189,20 @@ verify enc b32 = case normalize_case b32 of
     Just idx ->
       let (hrp, BU.unsafeDrop 1 -> dat) = BS.splitAt idx bs
       in  valid_checksum enc hrp dat
+
+-- | Encode a human-readable part and base256 data as bech32 or
+--   bech32m.  The human-readable part is lowercased.
+encode
+  :: Encoding
+  -> BS.ByteString        -- ^ base256-encoded human-readable part
+  -> BS.ByteString        -- ^ base256-encoded data part
+  -> Maybe BS.ByteString  -- ^ bech32-encoded bytestring
+encode enc (BS.map to_lower -> hrp) dat = do
+  guard (valid_hrp hrp)
+  let !ws = encode_with w5_tab dat
+  guard (BS.length hrp + BS.length ws + 7 <= 90)
+  let !chk = create_checksum enc hrp ws
+  pure $! BS.concat [hrp, BS.singleton 0x31, as_base32 (ws <> chk)]
 
 -- | Decode a bech32 or bech32m string into its (lowercase)
 --   human-readable part and base256 data part.  All-uppercase input
