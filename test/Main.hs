@@ -66,14 +66,14 @@ matches_reference (ValidInput h b) =
 
 bech32_decode_inverts_encode :: ValidInput -> Bool
 bech32_decode_inverts_encode (ValidInput h b) = case Bech32.encode h b of
-  Nothing -> error "generated faulty input"
+  Nothing -> False
   Just enc -> case Bech32.decode enc of
     Nothing -> False
     Just (h', dat) -> h == h' && b == dat
 
 bech32m_decode_inverts_encode :: ValidInput -> Bool
 bech32m_decode_inverts_encode (ValidInput h b) = case Bech32m.encode h b of
-  Nothing -> error "generated faulty input"
+  Nothing -> False
   Just enc -> case Bech32m.decode enc of
     Nothing -> False
     Just (h', dat) -> h == h' && b == dat
@@ -113,7 +113,7 @@ main = defaultMain $ testGroup "ppad-bech32" [
       Q.testProperty "decode . encode ~ id" $
         Q.withMaxSuccess 1000 bech32m_decode_inverts_encode
     , Q.testProperty "invalid bech32m input fails to encode" $
-        Q.withMaxSuccess 1000 bech32_invalid_input_fails_encode
+        Q.withMaxSuccess 1000 bech32m_invalid_input_fails_encode
     ]
   ]
 
