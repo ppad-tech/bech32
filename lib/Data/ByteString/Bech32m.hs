@@ -26,7 +26,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Base32 as B32
 import qualified Data.ByteString.Bech32.Internal as BI
-import qualified Data.ByteString.Internal as BSI
 import qualified Data.Char as C (toLower)
 
 create_checksum :: BS.ByteString -> BS.ByteString -> BS.ByteString
@@ -52,26 +51,21 @@ encode (B8.map C.toLower -> hrp) (B32.encode -> dat) = do
 -- | Decode a bech32m-encoded 'ByteString' into its human-readable and data
 --   parts.
 --
+--   All-uppercase input is accepted, and its human-readable part is
+--   returned in lowercase. Mixed-case input produces 'Nothing'.
+--
 --   >>> decode "hi1df6x7cnfdcs8wctnyp5x2un9m9ac4f"
 --   Just ("hi","jtobin was here")
 --   >>> decode "hey1df6x7cnfdcs8wctnyp5x2un9m9ac4f" -- s/hi/hey
 --   Nothing
 decode
-  :: BS.ByteString                        -- ^ bech23-encoded bytestring
+  :: BS.ByteString                        -- ^ bech32m-encoded bytestring
   -> Maybe (BS.ByteString, BS.ByteString) -- ^ (hrp, data less checksum)
-decode bs@(BSI.PS _ _ l) = do
-  guard (l <= 90)
-  guard (verify bs)
-  sep <- BS.elemIndexEnd 0x31 bs
-  case BS.splitAt sep bs of
-    (hrp, raw) -> do
-      guard (BI.valid_hrp hrp)
-      guard (BS.length raw >= 6)
-      (_, BS.dropEnd 6 -> bech32dat) <- BS.uncons raw
-      dat <- B32.decode bech32dat
-      pure (hrp, dat)
+decode = BI.decode BI.Bech32m
 
 -- | Verify that a bech32m string has a valid checksum.
+--
+--   All-uppercase input is accepted; mixed-case input is not.
 --
 --   >>> verify "bc1d4ujqum5wf5kuecwqlxtg"
 --   True

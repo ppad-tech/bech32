@@ -9,11 +9,14 @@ module Data.ByteString.Bech32.Internal (
   , create_checksum
   , verify
   , valid_hrp
+  , decode
   ) where
 
+import Control.Monad (guard)
 import Data.Bits ((.&.), (.|.))
 import qualified Data.Bits as B
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base32 as B32
 import Data.ByteString.Base32.Internal (enc_tab, dec_tab)
 import qualified Data.ByteString.Internal as BI
 import qualified Data.ByteString.Unsafe as BU
@@ -138,16 +141,66 @@ create_checksum enc hrp dat =
         pokeElemOff dst 4 (fi (pm `B.shiftR`  5) .&. 0x1f :: Word8)
         pokeElemOff dst 5 (fi  pm               .&. 0x1f :: Word8)
 
+-- | Lowercase an all-uppercase string.  Mixed-case strings (some
+--   ASCII uppercase and some ASCII lowercase characters) are rejected,
+--   per BIP173.
+normalize_case :: BS.ByteString -> Maybe BS.ByteString
+normalize_case bs
+  | has_upper && BS.any is_lower bs = Nothing
+  | has_upper = Just $! BS.map to_lower bs
+  | otherwise = Just bs
+  where
+    has_upper = BS.any is_upper bs
+
+is_upper :: Word8 -> Bool
+is_upper c = c >= 0x41 && c <= 0x5A
+{-# INLINE is_upper #-}
+
+is_lower :: Word8 -> Bool
+is_lower c = c >= 0x61 && c <= 0x7A
+{-# INLINE is_lower #-}
+
+to_lower :: Word8 -> Word8
+to_lower c
+  | is_upper c = c + 0x20
+  | otherwise  = c
+{-# INLINE to_lower #-}
+
+-- | Does a lowercase hrp and data part (5-bit values plus a 6-value
+--   checksum, as bech32 characters) carry a valid checksum?
+valid_checksum :: Encoding -> BS.ByteString -> BS.ByteString -> Bool
+valid_checksum enc hrp dat
+  | BS.length dat < 6 = False
+  | otherwise = case as_word5 dat of
+      Nothing -> False
+      Just ws -> polymod (hrp_expand hrp <> ws) == case enc of
+        Bech32  -> 1
+        Bech32m -> _BECH32M_CONST
+
+-- | Verify that a bech32 or bech32m string has a valid checksum.
+--   All-uppercase input is accepted; mixed-case input is not.
 verify :: Encoding -> BS.ByteString -> Bool
-verify enc b32 = case BS.elemIndexEnd 0x31 b32 of
-  Nothing  -> False
-  Just idx ->
-    let (hrp, BU.unsafeDrop 1 -> dat) = BS.splitAt idx b32
-        w5s = as_word5 dat
-    in  case w5s of
-          Nothing -> False
-          Just ws ->
-            let bs = hrp_expand hrp <> ws
-            in  polymod bs == case enc of
-                  Bech32 -> 1
-                  Bech32m -> _BECH32M_CONST
+verify enc b32 = case normalize_case b32 of
+  Nothing -> False
+  Just bs -> case BS.elemIndexEnd 0x31 bs of
+    Nothing  -> False
+    Just idx ->
+      let (hrp, BU.unsafeDrop 1 -> dat) = BS.splitAt idx bs
+      in  valid_checksum enc hrp dat
+
+-- | Decode a bech32 or bech32m string into its (lowercase)
+--   human-readable part and base256 data part.  All-uppercase input
+--   is accepted; mixed-case input is not.
+decode
+  :: Encoding
+  -> BS.ByteString                        -- ^ bech32-encoded bytestring
+  -> Maybe (BS.ByteString, BS.ByteString) -- ^ (hrp, data less checksum)
+decode enc b32 = do
+  guard (BS.length b32 <= 90)
+  bs  <- normalize_case b32
+  sep <- BS.elemIndexEnd 0x31 bs
+  let (hrp, BU.unsafeDrop 1 -> raw) = BS.splitAt sep bs
+  guard (valid_hrp hrp)
+  guard (valid_checksum enc hrp raw)
+  dat <- B32.decode (BS.dropEnd 6 raw)
+  pure (hrp, dat)
