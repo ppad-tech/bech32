@@ -204,7 +204,7 @@ encode enc (BS.map to_lower -> hrp) dat = do
   let !ws = encode_with w5_tab dat
   guard (BS.length hrp + BS.length ws + 7 <= 90)
   let !chk = create_checksum enc hrp ws
-  pure $! BS.concat [hrp, BS.singleton 0x31, as_base32 (ws <> chk)]
+  pure $! BS.concat [hrp, BS.singleton 0x31, as_base32 ws, as_base32 chk]
 
 -- | Decode a bech32 or bech32m string into its (lowercase)
 --   human-readable part and base256 data part.  All-uppercase input
