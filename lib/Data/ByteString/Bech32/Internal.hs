@@ -1,6 +1,5 @@
 {-# OPTIONS_HADDOCK hide, prune #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Data.ByteString.Bech32.Internal (
@@ -74,26 +73,19 @@ as_base32 (BI.PS sfp soff l) = case enc_tab of
 
 polymod :: BS.ByteString -> Word32
 polymod = BS.foldl' alg 1 where
-  generator :: Int -> Word32
-  generator = \case
-    0 -> 0x3b6a57b2
-    1 -> 0x26508e6d
-    2 -> 0x1ea119fa
-    3 -> 0x3d4233dd
-    4 -> 0x2a1462b3
-    _ -> error "ppad-bech32: internal error (please report this as a bug!)"
-
   alg !chk v =
     let !b = chk `B.shiftR` 25
-        c = (chk .&. 0x1ffffff) `B.shiftL` 5 `B.xor` fi v
-    in  loop_gen 0 b c
+        !c = (chk .&. 0x1ffffff) `B.shiftL` 5 `B.xor` fi v
+    in  c `B.xor` gen b 0 0x3b6a57b2
+          `B.xor` gen b 1 0x26508e6d
+          `B.xor` gen b 2 0x1ea119fa
+          `B.xor` gen b 3 0x3d4233dd
+          `B.xor` gen b 4 0x2a1462b3
 
-  loop_gen i b !chk
-    | i > 4 = chk
-    | otherwise =
-        let sor | B.testBit (b `B.shiftR` i) 0 = generator i
-                | otherwise = 0
-        in  loop_gen (succ i) b (chk `B.xor` sor)
+  -- the generator 'g' if bit 'i' of 'b' is set, else zero
+  gen :: Word32 -> Int -> Word32 -> Word32
+  gen b i g = negate ((b `B.shiftR` i) .&. 1) .&. g
+  {-# INLINE gen #-}
 
 valid_hrp :: BS.ByteString -> Bool
 valid_hrp hrp@(BI.PS _ _ l)
