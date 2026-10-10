@@ -54,7 +54,7 @@ as_word5 (BI.PS sfp soff l) = case dec_tab of
     pure $! if ok then Just (BI.PS fp 0 l) else Nothing
 
 -- | Translate a 5-bit-value bytestring to its bech32 base32
---   bytestring.
+--   bytestring.  Only the low 5 bits of each input byte are used.
 as_base32 :: BS.ByteString -> BS.ByteString
 as_base32 (BI.PS sfp soff l) = case enc_tab of
   BI.PS tfp toff _ ->
@@ -67,7 +67,7 @@ as_base32 (BI.PS sfp soff l) = case enc_tab of
               | i == l    = pure ()
               | otherwise = do
                   v <- peekElemOff sp i
-                  c <- peekElemOff tp (fi v)
+                  c <- peekElemOff tp (fi (v .&. 0x1f))
                   pokeElemOff dst i c
                   loop (i + 1)
         loop 0
