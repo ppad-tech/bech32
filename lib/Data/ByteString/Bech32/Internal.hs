@@ -89,7 +89,9 @@ polymod = BS.foldl' alg 1 where
 
   -- the generator 'g' if bit 'i' of 'b' is set, else zero
   gen :: Word32 -> Int -> Word32 -> Word32
-  gen b i g = negate ((b `B.shiftR` i) .&. 1) .&. g
+  gen b i g
+    | B.testBit b i = g
+    | otherwise     = 0
   {-# INLINE gen #-}
 
 valid_hrp :: BS.ByteString -> Bool
